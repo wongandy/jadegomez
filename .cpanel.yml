@@ -1,0 +1,4 @@
+deployment:
+  tasks:
+    - export DEPLOYPATH=/home/rkb9wst4at96/public_html/admin.jadegomezcomputer.com
+    - /bin/cp -R * $DEPLOYPATH
