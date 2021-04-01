@@ -16,8 +16,15 @@ class ItemPurchase extends Pivot
         return $this->belongsTo(Item::class);
     }
 
-    // public function hasPurchased($item_id)
-    // {
-    //     return;
-    // }
+    public function purchase() {
+        return $this->belongsTo(Purchase::class);
+    }
+
+    public function branch() {
+        return $this->belongsTo(Branch::class);
+    }
+
+    public function itemSale() {
+        return $this->hasOne(ItemSale::class, 'item_purchase_id');
+    }
 }

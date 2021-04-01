@@ -4,6 +4,7 @@ use App\Models\Sale;
 use App\Models\User;
 use App\Models\ItemPurchase;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\RmaController;
 use App\Http\Controllers\ItemController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SaleController;
@@ -17,15 +18,9 @@ use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\TransferController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\ItemPurchaseController;
 
 Auth::routes();
-
-Route::get('test2', function () {
-    $sales = Sale::with('items', 'customer', 'user')->get();
-    // dd($sales);
-
-    return view('test2', compact('sales'));
-});
 
 Route::get('login', [LoginController::class, 'showLoginForm'])->name('login');
 
@@ -66,5 +61,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('report', [ReportController::class, 'index'])->name('report.index');
     Route::get('report/create', [ReportController::class, 'create'])->name('report.create');
     Route::post('report/print', [ReportController::class, 'print'])->name('report.print');
-    // Route::get('report/print', [ReportController::class, 'print'])->name('report.print');
+
+    Route::get('rma/create', [RmaController::class, 'create'])->name('rma.create');
+    Route::get('itempurchase/rmaTrack', [ItemPurchaseController::class, 'rmaTrack'])->name('itempurchase.rmatrack');
 });

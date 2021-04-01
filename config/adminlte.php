@@ -388,6 +388,11 @@ return [
             'icon'        => 'nav-icon fas fa-fw fa-file-alt',
             'route' => 'report.create',
             'can' => 'generate reports'
+        ],
+        [
+            'text'        => 'RMA Tracker',
+            'icon'        => 'nav-icon fas fa-fw fa-file-alt',
+            'route' => 'rma.create'
         ]
     ],
 

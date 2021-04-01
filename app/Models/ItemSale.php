@@ -19,4 +19,9 @@ class ItemSale extends Pivot
     {
         return $this->belongsTo(Item::class);
     }
+
+    public function sale()
+    {
+        return $this->belongsTo(Sale::class);
+    }
 }
