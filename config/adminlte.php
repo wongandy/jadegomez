@@ -391,7 +391,7 @@ return [
         ],
         [
             'text'        => 'RMA Tracker',
-            'icon'        => 'nav-icon fas fa-fw fa-file-alt',
+            'icon'        => 'nav-icon fas fa-fw fa-search',
             'route' => 'rma.create'
         ]
     ],
