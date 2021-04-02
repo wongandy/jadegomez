@@ -64,4 +64,9 @@ class Sale extends Model
     {
         return $this->belongsTo(User::class, 'approved_by');
     }
+
+    public function endOfDayBy()
+    {
+        return $this->belongsTo(User::class, 'end_of_day_by');
+    }
 }

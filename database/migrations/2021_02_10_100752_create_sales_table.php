@@ -26,7 +26,8 @@ class CreateSalesTable extends Migration
             $table->string('status')->default('for approval');
             $table->double('cash_tendered')->nullable();
             $table->foreignId('approved_by')->nullable();
-            $table->date('end_of_day_at')->nullable();
+            $table->foreignId('end_of_day_by')->nullable();
+            $table->timestamp('end_of_day_at')->nullable();
             $table->timestamps();
         });
     }

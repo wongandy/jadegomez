@@ -7,7 +7,6 @@ use App\Models\Item;
 use App\Models\Sale;
 use App\Models\Customer;
 use App\Models\BranchItem;
-use App\Models\User;
 use App\Models\ItemPurchase;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -18,7 +17,6 @@ class SaleController extends Controller
     {
         $this->authorize('view sales');
         $sales = Sale::with('items', 'customer', 'user')->where('branch_id', auth()->user()->branch_id)->orderByDesc('id')->get();
-        // dd($sales->where('end_of_day_at', '2021-03-08')->count());
         return view('sale.index', compact('sales'));
     }
 
@@ -191,7 +189,10 @@ class SaleController extends Controller
     {
         Sale::where('branch_id', '=', auth()->user()->branch_id)
             ->where('end_of_day_at', '=', NULL)
-            ->update(['end_of_day_at' => date("Y-m-d H:i:s")]);
+            ->update([
+                'end_of_day_by' => auth()->user()->id,
+                'end_of_day_at' => date("Y-m-d H:i:s")
+            ]);
 
         return redirect()->route('sale.index');
     }
