@@ -20,7 +20,7 @@
             <div class="card-header">
                 <h3 class="card-title">Sales</h3>
 
-                @if (! $sales->where('end_of_day_at', date('Y-m-d'))->where('branch_id', auth()->user()->branch_id)->count())
+                @if (! $sales->whereBetween('end_of_day_at', [date('Y-m-d') . ' 00:00:00', date('Y-m-d') . ' 23:59:59'])->where('branch_id', auth()->user()->branch_id)->count())
                     <form action="{{ route('sale.endofday') }}" method="POST">
                         @csrf
                         <button type="submit" class="btn btn-primary float-right" onclick="return confirm('Are you sure to end day now?');">End Day</button>
