@@ -26,6 +26,7 @@ class PurchaseController extends Controller
         // }
         // dd($test);
         $this->authorize('view purchases');
+        DB::statement('SET SESSION group_concat_max_len = 1000000');
         $purchases = Purchase::with('items', 'supplier', 'user')->where('branch_id', auth()->user()->branch_id)->orderBy('id', 'DESC')->get();
         // $purchases = Purchase::get();
         

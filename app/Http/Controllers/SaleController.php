@@ -23,6 +23,7 @@ class SaleController extends Controller
     public function create()
     {
         $this->authorize('create sales');
+        DB::statement('SET SESSION group_concat_max_len = 1000000');
         $number = Sale::where('branch_id', auth()->user()->branch_id)->max('number') + 1;
         $sale_number = "DR-" . str_pad($number, 8, "0", STR_PAD_LEFT);
 
@@ -37,7 +38,6 @@ class SaleController extends Controller
             DB::raw("(SELECT cost_price FROM item_purchase WHERE item_purchase.item_id = items.id AND branch_id = " . auth()->user()->branch_id . " ORDER BY id DESC LIMIT 1) AS cost_price"))->get();
             // DB::raw("(SELECT adjusted_cost_price FROM item_ins WHERE item_ins.item_id = items.id ORDER BY id DESC LIMIT 1) as cost_price"))->limit(5)->get();
 
-        // dd($items);
         $customers = Customer::select('id', 'name', 'contact_number')->get();
         return view('sale.create', compact('items', 'customers', 'sale_number'));
     }
