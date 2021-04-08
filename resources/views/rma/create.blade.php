@@ -18,7 +18,7 @@
                         </div>
                     </div>
 
-                    <div id="sales_table_with_calculations">
+                    <div id="sales_table_with_calculations" class="table-responsive">
                         <table id="sales_table" class="table table-bordered">
                             <thead>
                                 <tr>

@@ -20,7 +20,7 @@
                 <h3 class="card-title">Transfers</h3>
             </div>
 
-            <div class="card-body">
+            <div class="card-body table-responsive">
                 <table id="transfers_list" class="table table-bordered table-striped">
                     <thead>
                         <tr>

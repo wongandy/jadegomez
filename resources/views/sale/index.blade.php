@@ -28,7 +28,7 @@
                 @endif
             </div>
 
-            <div class="card-body">
+            <div class="card-body table-responsive">
                 <table id="sales_list" class="table table-bordered table-striped">
                     <thead>
                         <tr>

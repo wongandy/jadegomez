@@ -17,7 +17,7 @@
             <div class="card-header">
                 <h3 class="card-title">Items</h3>
             </div>
-            <div class="card-body">
+            <div class="card-body table-responsive">
                 <table id="items_list" class="table table-bordered table-striped">
                     <thead>
                         <tr>
