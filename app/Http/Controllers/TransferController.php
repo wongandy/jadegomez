@@ -15,6 +15,7 @@ class TransferController extends Controller
     public function index()
     {
         $this->authorize('view transfers');
+        DB::statement('SET SESSION group_concat_max_len = 1000000');
         // $purchases = Purchase::with('items', 'supplier', 'user')->where('branch_id', auth()->user()->branch_id)->orderBy('id')->get();
         // return view('purchase.index', compact('purchases'));
         $transfers = Transfer::with('items', 'user', 'receivingBranch')->where('sending_branch_id', auth()->user()->branch_id)->orWhere('receiving_branch_id', auth()->user()->branch_id)->orderByDesc('id')->get();
@@ -26,7 +27,7 @@ class TransferController extends Controller
     public function create()
     {
         $this->authorize('create transfers');
-
+        DB::statement('SET SESSION group_concat_max_len = 1000000');
         $number = Transfer::where('sending_branch_id', auth()->user()->branch_id)->max('number') + 1;
         $transfer_number = "TR-" . str_pad($number, 8, "0", STR_PAD_LEFT);
 
