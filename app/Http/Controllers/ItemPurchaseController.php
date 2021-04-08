@@ -34,7 +34,7 @@ class ItemPurchaseController extends Controller
                                 ->with('approvedByUser', function ($q) {
                                     $q->select('id', 'name');
                                 });
-                    });
+                    })->latest();
                 }])->get();
         }
 
