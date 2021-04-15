@@ -14,7 +14,7 @@ class ItemPurchaseController extends Controller
         if ($request->serial_number) {
             $data = ItemPurchase::select('id', 'item_id', 'serial_number')
                 ->where('serial_number', 'LIKE', "%$request->serial_number%")
-                ->where('status', 'paid')
+                ->whereIn('status', ['paid', 'unpaid'])
                 ->with([ 
                     'itemSale' => function ($q) {
                         $q->select('item_purchase_id', 'item_id', 'sale_id')
