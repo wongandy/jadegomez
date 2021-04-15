@@ -96,10 +96,10 @@ input[type=number]::-webkit-outer-spin-button {
                         </div>
                     </div>
 
-                    <table id="transfers_table" class="table table-bordered" hidden>
+                    <table id="transfers_table" class="table table-bordered table-sm table-hover" hidden>
                         <thead>
                             <tr>
-                                <th>Item</th>
+                                <th class="w-25">Item</th>
                                 <th>UPC</th>
                                 <th>On Hand</th>
                                 <th>Serial Number</th>

@@ -72,7 +72,7 @@ input[type=number]::-webkit-outer-spin-button {
 
                     <input type="hidden" name="supplier_id" value="{{ $supplier->id }}">
 
-                    <table id="purchases_table" class="table table-bordered" hidden>
+                    <table id="purchases_table" class="table table-bordered table-sm table-hover" hidden>
                         <thead>
                             <tr>
                                 <th>Item</th>

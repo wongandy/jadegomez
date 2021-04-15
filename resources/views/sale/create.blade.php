@@ -119,10 +119,10 @@ input[type=number]::-webkit-outer-spin-button {
                     <ul id="errors">@if (count($errors)) {{ $errors }} @endif</ul>
 
                     <div id="sales_table_with_calculations" hidden>
-                        <table id="sales_table" class="table table-bordered">
+                        <table id="sales_table" class="table table-bordered table-sm table-hover">
                             <thead>
                                 <tr>
-                                    <th>Item</th>
+                                    <th class="w-25">Item</th>
                                     <th>UPC</th>
                                     <th>On Hand</th>
                                     <th>Serial Number</th>
