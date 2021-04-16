@@ -125,7 +125,7 @@ input[type=number]::-webkit-outer-spin-button {
                                     <th class="w-25">Item</th>
                                     <th>UPC</th>
                                     <th>On Hand</th>
-                                    <th>Serial Number</th>
+                                    <th class="w-25">Serial Number</th>
                                     <th>Cost Price</th>
                                     <th>Qty</th>
                                     <th>Selling Price</th>
