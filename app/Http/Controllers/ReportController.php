@@ -31,7 +31,6 @@ class ReportController extends Controller
         foreach ($period as $date) {
             array_push($dates, $date->format('Y-m-d'));
         }
-        // dd($dates);
 
         $sales = Sale::whereIn('end_of_day_at', $dates)->where('branch_id', auth()->user()->branch_id)->get();
         dd($sales);
@@ -46,7 +45,6 @@ class ReportController extends Controller
     public function print(ReportFormRequest $request)
     {
         $this->authorize('generate reports');
-        // dd($request->all());
         $from = $request->from;
         $to = $request->to;
         $dates = [];
@@ -56,43 +54,51 @@ class ReportController extends Controller
             array_push($dates, $date->format('Y-m-d'));
         }
 
+        // cashier summary report
         if ($request->report_type == 1) {
             $reports = [];
 
-            // foreach ($dates as $date) {
-            //     $sales = Sale::where('end_of_day_at', $date)
-            //         ->join('users', 'sales.approved_by', '=', 'users.id')
-            //         ->where('sales.branch_id', auth()->user()->branch_id)
-            //         ->get()->groupBy('name');
-
-            //     $reports[$date] = $sales;
-            // }
             foreach ($dates as $date) {
                 $sales = DB::table('sales')
                     ->join('users', 'sales.approved_by', 'users.id')
                     ->join('customers', 'sales.customer_id', 'customers.id')
                     ->where('sales.branch_id', auth()->user()->branch_id)
-                    ->where('end_of_day_at', $date)
+                    ->where('end_of_day_at', 'LIKE', $date . '%')
                     ->select('sales.sale_number', 'sales.created_at', 'sales.status', 'sales.net_total', 'users.name AS user_name', 'customers.name AS customer_name')
                     ->get()->groupBy('user_name');
 
                 $reports[$date] = $sales;
             }
-            // dd($sales);
+
             return view('report.cashiersummary', compact('reports', 'from', 'to'));
         }
-        elseif ($request->report_type == 2) {
-            $sales = Sale::whereIn('end_of_day_at', $dates)
-                ->where('branch_id', auth()->user()->branch_id)
-                ->where('status', '!=', 'void')
-                ->get();
-            // dd($sales);
-            return view('report.saledetail', compact('sales', 'from', 'to'));
+        elseif ($request->report_type == 2) { // sales details report
+            $reports = [];
+
+            foreach ($dates as $date) {
+                $sales = Sale::where('end_of_day_at', 'LIKE', $date . '%')
+                   ->where('branch_id', auth()->user()->branch_id)
+                    ->where('status', '!=', 'void')
+                    ->get();
+
+                $reports[$date] = $sales;
+            }
+
+            return view('report.saledetail', compact('reports', 'from', 'to'));
         }
-        elseif ($request->report_type == 3) {
-            $sales = Sale::whereIn('end_of_day_at', $dates)->where('branch_id', auth()->user()->branch_id)->where('status', 'void')->get();
-            // dd($sales);
-            return view('report.voidsale', compact('sales', 'from', 'to'));
+        elseif ($request->report_type == 3) { // void sales summary report
+            $reports = [];
+
+            foreach ($dates as $date) {
+                $sales = Sale::where('end_of_day_at', 'LIKE', $date . '%')
+                    ->where('branch_id', auth()->user()->branch_id)
+                    ->where('status', 'void')
+                    ->get();
+                
+                $reports[$date] = $sales;
+            }
+
+            return view('report.voidsale', compact('reports', 'from', 'to'));
         }
         elseif ($request->report_type == 4) {
             foreach ($dates as $date) {
@@ -108,23 +114,4 @@ class ReportController extends Controller
             return view('report.transferdetail', compact('reports', 'from', 'to'));
         }
     }
-
-    // public function print($from = "2021-01-24", $to = "2021-02-28")
-    // {
-    //     $dates = [];
-    //     $period = CarbonPeriod::create($from, $to);
-
-    //     foreach ($period as $date) {
-    //         array_push($dates, $date->format('Y-m-d'));
-    //     }
-
-    //     $reports = [];
-
-    //     foreach ($dates as $date) {
-    //         $sales = Sale::where('end_of_day_at', $date)->join('users', 'sales.approved_by', 'users.id')->where('sales.branch_id', auth()->user()->branch_id)->get()->groupBy('name');
-    //         $reports[$date] = $sales;
-    //     }
-
-    //     return view('report.print', compact('reports'));
-    // }
 }

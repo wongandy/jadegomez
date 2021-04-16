@@ -22,8 +22,14 @@
   <br>
   <br>
 
+  @foreach ($reports as $date => $sales)
     <div class="row">
         <div class="col-12">
+          @if ($reports[$date]->count())
+            <h4 class="text-center">{{ $date }}</h4>
+
+            <br>
+
             <table class="table table-sm table-striped">
                 <thead>
                     <tr>
@@ -73,8 +79,10 @@
                 </tbody>
             </table>
             <br>
+          @endif
         </div>
     </div>
+  @endforeach
 </div>
 
 <script type="text/javascript"> 
