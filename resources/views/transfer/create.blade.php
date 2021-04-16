@@ -192,9 +192,8 @@ input[type=number]::-webkit-outer-spin-button {
 
         $('#transfers_table').on('click', '.remove_item', function(e){
             let totalAmount = 0;
-            let id = $(this).attr('id');
-            let index = itemsSelected.indexOf(id);
-            itemsSelected.splice(index, 1);
+            let rowNumber = $(this).closest('tr').attr('id');
+            itemsSelected.splice(rowNumber, 1);
             $(this).closest('tr').remove();
 
             $('#transfers_table tbody tr').each(function(i) {
@@ -215,47 +214,7 @@ input[type=number]::-webkit-outer-spin-button {
                 $('#transfers_table').attr('hidden', true);
                 $('#create_transfer_button').attr('disabled', true);
             }
-            // $('#gross_total').val(totalAmount);
-            // let netTotal = $('#gross_total').val() - $('#discount').val();
-            // $('#net_total').val(netTotal);
-            
-            // if ($('#sales_table tbody tr').length > 0) {
-            //     $('#sales_table_with_calculations').attr('hidden', false);
-            //     $('#create_sale_button').attr('disabled', false);
-            // }
-            // else {
-            //     $('#sales_table_with_calculations').attr('hidden', true);
-            //     $('#create_sale_button').attr('disabled', true);
-            // }
-
-
-            // if ($('#sales_table tbody tr').length < 1) {
-            //     $('#sales_table, #calculation, #create-sales-button').attr('hidden', true);
-            // }
         });
-
-        // $(document).on('select2:select select2:unselect', '.serial_number', function() {
-        //     let totalAmount = 0;
-        //     let rowNumber = $(this).closest('tr').attr('id');
-        //     let quantity = $(this).select2('data').length;
-        //     let sellingPrice = $('input[name="items[' + rowNumber + '][selling_price]"]').val();
-        //     let amount = quantity * sellingPrice;
-
-        //     $('input[name="items[' + rowNumber + '][quantity]"]').val(quantity);
-        //     $('input[name="items[' + rowNumber + '][amount]"]').val(amount);
-
-        //     $('#trasnfers_table tbody tr').each(function() {
-        //         if ($(this).find('.amount').val() == '') {
-        //             $(this).find('.amount').val(0);
-        //         }
-
-        //         totalAmount += parseFloat($(this).find('.amount').val());
-        //     });
-
-        //     $('#gross_total').val(totalAmount);
-        //     let netTotal = $('#gross_total').val() - $('#discount').val();
-        //     $('#net_total').val(netTotal);
-        // });
 
         $(document).on('keyup', '.quantity', function() {
             // alert();

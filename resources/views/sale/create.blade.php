@@ -326,10 +326,9 @@ input[type=number]::-webkit-outer-spin-button {
             });
 
             $('#sales_table').on('click', '.remove_item', function(e){
+                let rowNumber = $(this).closest('tr').attr('id');
                 let totalAmount = 0;
-                let id = $(this).attr('id');
-                let index = itemsSelected.indexOf(id);
-                itemsSelected.splice(index, 1);
+                itemsSelected.splice(rowNumber, 1);
                 $(this).closest('tr').remove();
 
                 $('#sales_table tbody tr').each(function(i) {
