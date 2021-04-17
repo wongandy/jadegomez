@@ -59,7 +59,9 @@ class Kernel extends ConsoleKernel
 
                         // assign id of last user to be responsible for clicking end of day button
                         Sale::where('branch_id', '=', $branch->id)
-                            ->whereBetween('created_at', [date('Y-m-d', strtotime('-1 day')) . ' 00:00:00', date('Y-m-d', strtotime('-1 day')) . ' 23:59:59'])
+                            // ->whereBetween('created_at', [date('Y-m-d', strtotime('-1 day')) . ' 00:00:00', date('Y-m-d', strtotime('-1 day')) . ' 23:59:59'])
+                            ->whereNull('end_of_day_by')
+                            ->whereNull('end_of_day_at')
                             ->update([
                                 'end_of_day_by' => $idOfLastUser,
                                 'end_of_day_at' => date('Y-m-d', strtotime('-1 day')) . ' 23:59:59'
