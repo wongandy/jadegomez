@@ -45,7 +45,7 @@ class Kernel extends ConsoleKernel
                     //check if end of day button was clicked
                     $endOfDayButtonWasClicked = Sale::where('branch_id', '=', $branch->id)
                         ->whereNotNull('end_of_day_at')
-                        ->whereBetween('created_at', [date('Y-m-d', strtotime('-1 day')) . ' 00:00:00', date('Y-m-d', strtotime('-1 day')) . ' 23:59:59'])
+                        ->whereBetween('end_of_day_at', [date('Y-m-d', strtotime('-1 day')) . ' 00:00:00', date('Y-m-d', strtotime('-1 day')) . ' 23:59:59'])
                         ->count();
 
                     if (! $endOfDayButtonWasClicked) {
