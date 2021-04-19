@@ -126,7 +126,7 @@ input[type=number]::-webkit-outer-spin-button {
                                     <th>UPC</th>
                                     <th>On Hand</th>
                                     <th class="w-25">Serial Number</th>
-                                    <th>Cost Price</th>
+                                    {{-- <th>Cost Price</th> --}}
                                     <th>Qty</th>
                                     <th>Selling Price</th>
                                     <th>Amount</th>
@@ -295,7 +295,7 @@ input[type=number]::-webkit-outer-spin-button {
                     let amount = "<input type='number' class='form-control-plaintext amount' name='items[" + rowNumber + "][amount]' tabindex='-1' readonly>";
                     let removeButton = "<button type='button' class='btn btn-default remove_item' tabindex='-1'><i class='fas fa-fw fa-times'></i></button>";
                     
-                    $('#sales_table tbody').append('<tr id="' + rowNumber + '"><td>' + id + withSerialNumber + name + '</td><td>' + upc + '</td><td>' + onHand + '</td><td>' + serialNumber + '</td><td>' + costPrice + '</td><td>' + quantity + '</td><td>' + sellingPrice + '</td><td>' + amount + '</td><td>' + removeButton + '</td></tr>');
+                    $('#sales_table tbody').append('<tr id="' + rowNumber + '"><td>' + id + withSerialNumber + name + '</td><td>' + upc + '</td><td>' + onHand + '</td><td>' + serialNumber + '</td><td>' + quantity + '</td><td>' + sellingPrice + '</td><td>' + amount + '</td><td>' + removeButton + '</td></tr>');
 
                     $('.select_serial_numbers').select2({
                         language:{
