@@ -8,16 +8,21 @@
   <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
   <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
+  <style>
+    html {
+      font-size: 20px;
+    }
+  </style>
 </head>
 <body>
 <div class="wrapper">
   <div class="row">
     <div class="col">
-      <b>Date:</b> {{ $transfer->created_at }}<br>
-      <b>To Branch:</b> {{ $transfer->receivingBranch->address }}<br>
+      <b>To:</b> {{ $transfer->receivingBranch->address }}<br>
       <b>Contact Number:</b> {{ $transfer->receivingBranch->contact_number }}
     </div>
     <div class="col text-right">
+        <b>Date:</b> {{ date('Y-m-d h:i:sa', strtotime($transfer->created_at)) }}<br>
         <b>Delivery Receipt No:</b> {{ $transfer->transfer_number }}<br>
         <b>Cashier:</b> {{ $transfer->user->name }}<br>
     </div>
@@ -26,7 +31,7 @@
   
   <div class="row">
     <div class="col text-center">
-      <h5>{{ auth()->user()->branch->name }}</h5>
+      <h3>{{ auth()->user()->branch->name }}</h3>
       <small>{{ auth()->user()->branch->address }}</small><br>
       <small>Contact Number {{ auth()->user()->branch->contact_number }}</small>    
     </div>
