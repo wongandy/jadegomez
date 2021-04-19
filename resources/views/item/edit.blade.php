@@ -51,7 +51,8 @@
                         </div>
                     </div>
 
-                    <div class="form-group row" @if ($item->purchases->count()) hidden @endif>
+                    {{-- <div class="form-group row" @if ($item->purchases->count()) hidden @endif> --}}
+                        <div class="form-group row">
                         <label for="with_serial_number" class="col-sm-2 col-form-label">With Serial Number</label>
                         
                         <div class="col-sm-10">
