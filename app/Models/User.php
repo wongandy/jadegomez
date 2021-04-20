@@ -3,26 +3,28 @@
 namespace App\Models;
 
 use App\Permissions\HasPermissionsTrait;
+use Illuminate\Notifications\Notifiable;
+use Spatie\Activitylog\Traits\LogsActivity;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable, HasPermissionsTrait;
+    use HasFactory, Notifiable, HasPermissionsTrait, LogsActivity;
 
     /**
      * The attributes that are mass assignable.
      *
      * @var array
      */
-    protected $fillable = [
-        'name',
-        'email',
-        'password',
-        'branch_id'
-    ];
+    protected $fillable = ['name', 'email', 'password', 'branch_id'];
+    protected static $logName = 'User';
+
+    public function getDescriptionForEvent(string $eventName): string
+    {
+        return ":causer.name $eventName user :subject.name";
+    }
 
     /**
      * The attributes that should be hidden for arrays.

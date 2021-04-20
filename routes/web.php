@@ -4,7 +4,9 @@ use App\Models\Sale;
 use App\Models\User;
 use App\Models\ItemPurchase;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\LogController;
 use App\Http\Controllers\RmaController;
+use Spatie\Activitylog\Models\Activity;
 use App\Http\Controllers\ItemController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SaleController;
@@ -64,4 +66,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('rma/create', [RmaController::class, 'create'])->name('rma.create');
     Route::get('itempurchase/rmaTrack', [ItemPurchaseController::class, 'rmaTrack'])->name('itempurchase.rmatrack');
+        
+    Route::get('log', [LogController::class, 'create'])->name('log');
+    Route::get('log/displayLog', [LogController::class, 'displayLog'])->name('log.displaylog');
 });

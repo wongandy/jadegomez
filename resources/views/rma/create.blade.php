@@ -65,7 +65,7 @@
 
                         if (data.length) {
                             $.each(data, function(i, item) {
-                                html += "<tr><td>" + new Date(data[i].item_sale.sale.created_at).toLocaleString() + "</td><td>" + data[i].item_sale.sale.sale_number + "</td><td>" + data[i].item_sale.sale.branch.address + "</td><td>" + data[i].item_sale.item.name + "</td><td>" + data[i].serial_number + "</td><td>" + data[i].item_sale.sale.customer.name + "</td><td>" + data[i].item_sale.sale.customer.contact_number + "</td><td>" + data[i].item_sale.sale.user.name + "</td><td>" + data[i].item_sale.sale.approved_by_user.name + "</td></tr>";
+                                html += "<tr><td>" + data[i].item_sale.sale.created_at + "</td><td>" + data[i].item_sale.sale.sale_number + "</td><td>" + data[i].item_sale.sale.branch.address + "</td><td>" + data[i].item_sale.item.name + "</td><td>" + data[i].serial_number + "</td><td>" + data[i].item_sale.sale.customer.name + "</td><td>" + data[i].item_sale.sale.customer.contact_number + "</td><td>" + data[i].item_sale.sale.user.name + "</td><td>" + data[i].item_sale.sale.approved_by_user.name + "</td></tr>";
                             });
                         }
                         else {

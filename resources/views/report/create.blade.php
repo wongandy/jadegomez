@@ -12,8 +12,8 @@
             <div class="card-header">
                 <h3 class="card-title">Create Report</h3>
             </div>
-            <ul id="errors">
-            </ul>
+            {{-- <ul id="errors">
+            </ul> --}}
             <form id="testform" class="form-horizontal" action="{{ route('report.print') }}" method="POST">
                 @csrf
 
@@ -67,14 +67,8 @@
         var end = moment();
 
         function cb(start, end) {
-            // alert(start);
-            // console.log(start);
-            // $('#date_range').val(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));
-            // $('#date_range').val('andy');
             $('#from').val(start.format('YYYY-MM-DD'));
             $('#to').val(end.format('YYYY-MM-DD'));
-            // console.log('start: ' + start.format('YYYY-MM-DD'));
-            // console.log('end: ' + end.format('YYYY-MM-DD'));
             console.log('from: ' + $('#from').val());
             console.log('to: ' + $('#to').val());
         }
@@ -94,20 +88,26 @@
 
         cb(start, end);
         
-        // $('#date_range').daterangepicker({
-        //     "startDate": "02/25/2021",
-        //     "endDate": "03/03/2021",
-        //     opens: 'left'
-        // }, function(start, end, label) {
-        //     alert();
-        //     // console.log("A new date selection was made: " +  + ' to ' + end.format('YYYY-MM-DD'));
-        //     $('#from').val(start.format('YYYY-MM-DD'));
-        //     $('#to').val(end.format('YYYY-MM-DD'));
-        //     console.log($('#from').val());
-        //     console.log($('#to').val());
-        // });
+        $(document).on('keyup', '#serial_number', function () {
+            $.ajax({
+                url: "{{ route('itempurchase.rmatrack') }}",
+                data: { serial_number: $(this).val() },
+                success: function (data) {
+                    let html;
 
-        // console.log($('#date_range').val());
+                    if (data.length) {
+                        $.each(data, function(i, item) {
+                            html += "<tr><td>" + new Date(data[i].item_sale.sale.created_at).toLocaleString() + "</td><td>" + data[i].item_sale.sale.sale_number + "</td><td>" + data[i].item_sale.sale.branch.address + "</td><td>" + data[i].item_sale.item.name + "</td><td>" + data[i].serial_number + "</td><td>" + data[i].item_sale.sale.customer.name + "</td><td>" + data[i].item_sale.sale.customer.contact_number + "</td><td>" + data[i].item_sale.sale.user.name + "</td><td>" + data[i].item_sale.sale.approved_by_user.name + "</td></tr>";
+                        });
+                    }
+                    else {
+                        html = "<tr><td colspan='9'>No Item Found</tr>";
+                    }
+                    
+                    $("#sales_table tbody").html(html);
+                }
+            });
+        });
     }); 
     </script>
 @stop

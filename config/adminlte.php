@@ -393,6 +393,11 @@ return [
             'text'        => 'RMA Tracker',
             'icon'        => 'nav-icon fas fa-fw fa-search',
             'route' => 'rma.create'
+        ],
+        [
+            'text'        => 'Activity Log',
+            'icon'        => 'nav-icon fas fa-fw fa-history',
+            'route' => 'log'
         ]
     ],
 

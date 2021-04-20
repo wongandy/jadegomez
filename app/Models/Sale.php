@@ -6,14 +6,26 @@ use App\Models\Item;
 use App\Models\User;
 use App\Models\Customer;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use DateTimeInterface;
 
 class Sale extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsActivity;
 
     protected $fillable = ['customer_id', 'branch_id', 'user_id', 'sale_number', 'number', 'gross_total', 'discount', 'net_total', 'status'];
+    protected static $logName = 'Sale';
+    protected function serializeDate(DateTimeInterface $date)
+    {
+        return $date->format('Y-m-d h:i:sA');
+    }
+
+    public function getDescriptionForEvent(string $eventName): string
+    {
+        return ":causer.name $eventName sale :subject.sale_number";
+    }
 
     public function items()
     {

@@ -5,13 +5,20 @@ namespace App\Models;
 use App\Models\Branch;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Activitylog\Traits\LogsActivity;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Transfer extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsActivity;
 
     protected $fillable = ['sending_branch_id', 'user_id', 'receiving_branch_id', 'number', 'transfer_number', 'notes', 'status'];
+    protected static $logName = 'Transfer';
+
+    public function getDescriptionForEvent(string $eventName): string
+    {
+        return ":causer.name $eventName transfer :subject.transfer_number";
+    }
 
     public function items()
     {

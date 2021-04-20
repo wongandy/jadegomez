@@ -7,14 +7,20 @@ use App\Models\Branch;
 use App\Models\Supplier;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Activitylog\Traits\LogsActivity;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Purchase extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsActivity;
 
     protected $fillable = ['branch_id', 'supplier_id', 'user_id', 'number', 'purchase_number', 'status'];
+    protected static $logName = 'Purchase';
 
+    public function getDescriptionForEvent(string $eventName): string
+    {
+        return ":causer.name $eventName purchase :subject.purchase_number";
+    }
     public function supplier()
     {
         return $this->belongsTo(Supplier::class);
