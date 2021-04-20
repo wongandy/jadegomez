@@ -113,7 +113,7 @@
   });
 
   function closePrintView() {
-    // window.location.href = "{{ route('sale.index') }}";
+    window.location.href = "{{ route('sale.index') }}";
   }
 </script>
 </body>
