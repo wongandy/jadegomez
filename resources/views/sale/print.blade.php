@@ -11,6 +11,7 @@
   <style>
     html {
       font-size: 20px;
+      padding: 35px;
     }
   </style>
 </head>
@@ -112,7 +113,7 @@
   });
 
   function closePrintView() {
-    window.location.href = "{{ route('sale.index') }}";
+    // window.location.href = "{{ route('sale.index') }}";
   }
 </script>
 </body>
