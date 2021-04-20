@@ -50,15 +50,15 @@
                             @enderror
                         </div>
                     </div>
-
+                    <p>{{ $item->with_serial_number }}</p>
                     {{-- <div class="form-group row" @if ($item->purchases->count()) hidden @endif> --}}
                         <div class="form-group row">
                         <label for="with_serial_number" class="col-sm-2 col-form-label">With Serial Number</label>
                         
                         <div class="col-sm-10">
                             <select class="form-control" name="with_serial_number">
-                                <option value="0" {{ $item->with_serial_number === 0 ? 'selected' : '' }}>No</option>
-                                <option value="1" {{ $item->with_serial_number === 1 ? 'selected' : '' }}>Yes</option>
+                                <option value="0" {{ $item->with_serial_number == 0 ? 'selected' : '' }}>No</option>
+                                <option value="1" {{ $item->with_serial_number == 1 ? 'selected' : '' }}>Yes</option>
                             </select>
 
                             @error('with_serial_number')
