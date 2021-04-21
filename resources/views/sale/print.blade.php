@@ -56,8 +56,8 @@
             <tr>
               <td>{{ $item->name }}</td>
               <td>{{ $item->quantity }}</td>
-              <td>{{ $item->selling_price }}</td>
-              <td>{{ $item->quantity * $item->selling_price }}</td>
+              <td>{{ $item->sold_price }}</td>
+              <td>{{ $item->quantity * $item->sold_price }}</td>
             </tr>
           @endforeach
         </tbody>
