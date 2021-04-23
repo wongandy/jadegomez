@@ -11,7 +11,7 @@
   <style>
     html {
       font-size: 20px;
-      padding: 35px;
+      padding: 35px 38px;
     }
   </style>
 </head>
