@@ -7,9 +7,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-  <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
   <style>
     body {
+      font-family: 'Courier New', Courier, monospace;
       font-size: 19px;
       padding: 35px 38px;
       line-height: 1;
@@ -24,7 +24,7 @@
       <b>Contact Number:</b> {{ $transfer->receivingBranch->contact_number }}
     </div>
     <div class="col text-right">
-        <b>Date:</b> {{ date('Y-m-d h:i:sa', strtotime($transfer->created_at)) }}<br>
+        <b>Date:</b> {{ date('Y-m-d h:i:s a', strtotime($transfer->created_at)) }}<br>
         <b>Delivery Receipt No:</b> {{ $transfer->transfer_number }}<br>
         <b>Cashier:</b> {{ $transfer->user->name }}<br>
     </div>
@@ -42,7 +42,7 @@
 
   <div class="row">
     <div class="col-12">
-      <table class="table table-sm table-striped">
+      <table class="table table-sm table-striped table-bordered">
         <thead>
           <tr>
             <th>Item</th>
@@ -62,7 +62,7 @@
     </div>
   </div>
   <div class="row">
-    <div class="col-8">
+    <div class="col">
       <p>
         <small>This document is not valid for claiming input tax. For WARRANTY purposes only.</small><br>
         <small>Printed on <?php echo date('Y-m-d h:i:sa'); ?></small>
