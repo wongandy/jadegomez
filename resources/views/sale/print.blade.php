@@ -18,7 +18,7 @@
   </style>
 </head>
 <body>
-<div class="wrapper">
+<div class="wrapper font-weight-bold">
   <div class="row">
     <div class="col">
       <b>Customer:</b> {{ $sale->customer->name }}<br>
