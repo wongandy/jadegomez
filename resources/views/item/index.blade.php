@@ -22,7 +22,7 @@
                     <thead>
                         <tr>
                             <th>Name</th>
-                            <th>Details</th>
+                            <th>On Hand</th>
                             <th>UPC</th>
                             <th>Cost Price</th>
                             <th>Selling Price</th>
@@ -37,7 +37,7 @@
                         @forelse ($items as $item)
                             <tr>
                                 <td>{{ $item->name }}</td>
-                                <td>{{ $item->details }}</td>
+                                <td>{{ $item->on_hand }}</td>
                                 <td>{{ $item->upc }}</td>
                                 <td>{{ $item->dynamic_cost_price }}</td>
                                 <td>{{ $item->selling_price }}</td>

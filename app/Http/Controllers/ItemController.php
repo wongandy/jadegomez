@@ -7,16 +7,24 @@ use App\Models\ItemPurchase;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use App\Http\Requests\ItemRequest;
+use Illuminate\Support\Facades\DB;
 
 class ItemController extends Controller
 {
     public function index()
-    {   
-        // dd(ItemPurchase::where('item_id', 1)->count() ? 'yes' :'no');
-        // dd(Item::find(2)->purchases->count() ? 'y' : 'n');
+    {
         $this->authorize('view items');
         
-        $items = Item::select('id', 'name', 'details', 'upc', 'dynamic_cost_price', 'selling_price', 'with_serial_number')->orderBy('id', 'DESC')->get();
+        $items = Item::select(
+                    'id',
+                    'name',
+                    'details',
+                    'upc',
+                    'dynamic_cost_price',
+                    'selling_price',
+                    'with_serial_number',
+                    DB::raw("(SELECT COUNT(*) FROM item_purchase WHERE item_id = items.id AND branch_id = " . auth()->user()->branch_id . " AND status = 'available') AS on_hand"))->orderBy('id', 'ASC')->get();
+
         return view('item.index', compact('items'));
     }
 
