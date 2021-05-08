@@ -95,13 +95,14 @@ class TransferController extends Controller
         }
 
         $number = Transfer::where('sending_branch_id', auth()->user()->branch_id)->max('number') + 1;
+        $transfer_number = "DR-" . str_pad($number, 8, "0", STR_PAD_LEFT);
 
         $transfer = Transfer::create([
             'sending_branch_id' => $request->user()->branch_id,
             'user_id' => $request->user()->id,
             'receiving_branch_id' => $request->to_branch_id,
             'number' => $number,
-            'transfer_number' => $request->transfer_number,
+            'transfer_number' => $transfer_number,
             'notes' => $request->notes
         ]);
 

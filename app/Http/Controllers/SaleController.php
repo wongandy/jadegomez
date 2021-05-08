@@ -115,13 +115,14 @@ class SaleController extends Controller
         }
 
         $number = Sale::where('branch_id', auth()->user()->branch_id)->max('number') + 1;
+        $sale_number = "DR-" . str_pad($number, 8, "0", STR_PAD_LEFT);
 
         Sale::create([
             'customer_id' => $customer_id,
             'branch_id' => $branch_id,
             'user_id' => $request->user()->id,
             'number' => $number,
-            'sale_number' => $request->sale_number,
+            'sale_number' => $sale_number,
             'gross_total' => $request->gross_total,
             'discount' => $request->discount,
             'net_total' => $request->net_total
