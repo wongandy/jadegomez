@@ -214,9 +214,9 @@ class SaleController extends Controller
     {
         // dd($transfer);
 
-        if ($sale->status == 'paid' || $sale->status == 'unpaid') {
-            return redirect()->route('sale.index')->with('message', 'Sale ' . $sale->sale_number .' has already been approved and cannot be voided anymore!');
-        }
+        // if ($sale->status == 'paid' || $sale->status == 'unpaid') {
+        //     return redirect()->route('sale.index')->with('message', 'Sale ' . $sale->sale_number .' has already been approved and cannot be voided anymore!');
+        // }
 
         $sale = Sale::where('id', $sale->id)->first();
         $sale->update(['status' => 'void']);

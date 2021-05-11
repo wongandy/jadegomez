@@ -86,7 +86,8 @@
                                         <td>
                                             @can('delete sales')
                                                 {{-- @if ($purchase->status != 'void' && (! $purchase->items()->where('status', '!=', 'available')->count())) --}}
-                                                @if ($sale->status != 'void' && $sale->status != 'paid' && $sale->status != 'unpaid')
+                                                {{-- @if ($sale->status != 'void' && $sale->status != 'paid' && $sale->status != 'unpaid') --}}
+                                                @if ($sale->status != 'void')
                                                     <form action="{{ route('sale.void', $sale->id) }}" method="POST" style="display: inline-block;">
                                                         @csrf
                                                         @method("PUT")
@@ -167,7 +168,8 @@
                                         <td>{{ $sale->user->name }}</td>
                                         <td>
                                             @can('delete sales')
-                                                @if ($sale->status != 'void' && $sale->status != 'paid' && $sale->status != 'unpaid')
+                                                {{-- @if ($sale->status != 'void' && $sale->status != 'paid' && $sale->status != 'unpaid') --}}
+                                                @if ($sale->status != 'void')
                                                     <form action="{{ route('sale.void', $sale->id) }}" method="POST" style="display: inline-block;">
                                                         @csrf
                                                         @method("PUT")
