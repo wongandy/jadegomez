@@ -40,7 +40,11 @@ class PurchaseController extends Controller
 
         $number = Purchase::where('branch_id', auth()->user()->branch_id)->max('number') + 1;
         $purchase_number = "PO-" . str_pad($number, 8, "0", STR_PAD_LEFT);
-        $items = Item::with('purchases')->get();
+        $items = Item::get();
+        // $items = Item::with(['purchases' => function($query) {
+        //     return $query->select('purchases.id', 'supplier_id');
+        // }])->get();
+        // die();
         return view('purchase.create', compact('items', 'supplier', 'purchase_number'));
     }
    

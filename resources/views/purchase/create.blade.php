@@ -53,9 +53,9 @@ input[type=number]::-webkit-outer-spin-button {
                                         data-upc="{{ $item->upc }}" 
                                         data-with-serial-number="{{ $item->with_serial_number }}" 
                                         data-price="{{ $item->price }}"
-                                        @if ($item->purchases->where('supplier_id', $supplier->id)->first()) 
+                                        {{-- @if ($item->purchases->where('supplier_id', $supplier->id)->first()) 
                                             data-cost-price="{{ $item->purchases->where('supplier_id', $supplier->id)->last()->pivot->cost_price }}" 
-                                        @endif
+                                        @endif --}}
                                         value="{{ $item->id == old('item_id') ? old('item_id') : $item->id }}" 
                                         {{ $item->id == old('item_id') ? 'selected' : '' }} 
                                     >{{ $item->name }}
