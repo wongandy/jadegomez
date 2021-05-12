@@ -16,8 +16,20 @@ class SaleController extends Controller
     public function index()
     {
         $this->authorize('view sales');
-        $sales = Sale::with('items', 'customer', 'user')->where('branch_id', auth()->user()->branch_id)->orderByDesc('id')->get();
-        return view('sale.index', compact('sales'));
+        
+        $today_sales = Sale::with('items', 'customer', 'user')
+            ->where('branch_id', auth()->user()->branch_id)
+            ->where(function($query) {
+                $query->where('updated_at', '>=', date('Y-m-d') . ' 00:00:00')
+               ->orWhere('status', '=', 'for approval');
+           })
+            ->orderByDesc('id')->get();
+        
+        $all_sales = Sale::with('items', 'customer', 'user')
+            ->where('branch_id', auth()->user()->branch_id)
+            ->orderByDesc('id')->get();
+            
+        return view('sale.index', compact(['today_sales', 'all_sales']));
     }
 
     public function create()
