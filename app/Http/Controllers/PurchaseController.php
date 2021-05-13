@@ -37,14 +37,13 @@ class PurchaseController extends Controller
     public function create(Supplier $supplier)
     {
         $this->authorize('create purchases');
-
+        // dd($supplier->id);
         $number = Purchase::where('branch_id', auth()->user()->branch_id)->max('number') + 1;
         $purchase_number = "PO-" . str_pad($number, 8, "0", STR_PAD_LEFT);
-        $items = Item::get();
-        // $items = Item::with(['purchases' => function($query) {
-        //     return $query->select('purchases.id', 'supplier_id');
-        // }])->get();
-        // die();
+        $items = Item::with(['purchases' => function ($query) use ($supplier) {
+            return $query->select('purchases.id', 'supplier_id')->where('supplier_id', $supplier->id)->where('purchases.status', '!=', 'void')->where('purchases.branch_id', auth()->user()->branch_id);
+        }])->get();
+        
         return view('purchase.create', compact('items', 'supplier', 'purchase_number'));
     }
    
