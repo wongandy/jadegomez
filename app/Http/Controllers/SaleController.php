@@ -46,8 +46,10 @@ class SaleController extends Controller
             'with_serial_number', 
             'selling_price',
             DB::raw("(SELECT CONCAT('[\"', GROUP_CONCAT(serial_number SEPARATOR '\",\"'),'\"]') FROM item_purchase WHERE item_id = items.id AND branch_id = " . auth()->user()->branch_id . " AND status = 'available') AS serial_numbers"),
-            DB::raw("(SELECT COUNT(*) FROM item_purchase WHERE item_id = items.id AND branch_id = " . auth()->user()->branch_id . " AND status = 'available') AS on_hand"),
-            DB::raw("(SELECT cost_price FROM item_purchase WHERE item_purchase.item_id = items.id AND branch_id = " . auth()->user()->branch_id . " ORDER BY id DESC LIMIT 1) AS cost_price"))->get();
+            // DB::raw("(SELECT CONCAT('[\"', GROUP_CONCAT(serial_number SEPARATOR '\",\"'),'\"]') FROM item_purchase WHERE item_id IN (1, 2, 3) AND branch_id = " . auth()->user()->branch_id . " AND status = 'available') AS serial_numbers"),
+            DB::raw("(SELECT quantity FROM branch_item WHERE item_id = items.id AND branch_id = " . auth()->user()->branch_id . ") AS on_hand"))->get();
+            // DB::raw("(SELECT COUNT(*) FROM item_purchase WHERE item_id = items.id AND branch_id = " . auth()->user()->branch_id . " AND status = 'available') AS on_hand"),
+            // DB::raw("(SELECT cost_price FROM item_purchase WHERE item_purchase.item_id = items.id AND branch_id = " . auth()->user()->branch_id . " ORDER BY id DESC LIMIT 1) AS cost_price"))->get();
             // DB::raw("(SELECT adjusted_cost_price FROM item_ins WHERE item_ins.item_id = items.id ORDER BY id DESC LIMIT 1) as cost_price"))->limit(5)->get();
 
         $customers = Customer::select('id', 'name', 'contact_number')->get();
