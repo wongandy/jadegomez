@@ -126,6 +126,10 @@ class TransferController extends Controller
     public function updateStatus(Transfer $transfer)
     {
         $transfers = Transfer::find($transfer->id);
+
+        if ($transfer->status == 'void') {
+            return redirect()->route('transfer.index')->with('message', 'Transfer has already been voided');
+        }
         
         $transfers->status = "received";
         $transfers->received_by = auth()->user()->id;

@@ -98,7 +98,11 @@ input[type=number]::-webkit-outer-spin-button {
                                         data-with-serial-number="{{ $item->with_serial_number }}" 
                                         data-price="{{ $item->price }}"
                                         data-selling-price="{{ $item->selling_price }}"
-                                        data-on-hand="{{ $item->on_hand }}"
+                                        @if ($item->on_hand) 
+                                            data-on-hand="{{ $item->on_hand }}" 
+                                        @else
+                                            data-on-hand="0"
+                                        @endif
                                         data-serial-numbers="{{ $item->serial_numbers}}"
                                         data-cost-price="{{ $item->cost_price }}"
                                         {{-- @if ($item->purchases->where('supplier_id', $supplier->id)->first()) 

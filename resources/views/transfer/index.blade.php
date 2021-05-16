@@ -78,7 +78,7 @@
                                 </td>
                                 <td>{{ $transfer->user->name }}</td>
                                 <td>
-                                    @if ($transfer->receiving_branch_id == auth()->user()->branch_id && $transfer->status != 'received') 
+                                    @if ($transfer->receiving_branch_id == auth()->user()->branch_id && $transfer->status != 'received' && $transfer->status != 'void') 
                                         <form action="{{ route('transfer.updatestatus', $transfer) }}" method="POST">
                                             @csrf
                                             <button class="btn btn-info" type="btn btn-info" onclick="return confirm('Are you sure to receive transfer?');">Receive</button>

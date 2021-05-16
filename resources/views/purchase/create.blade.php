@@ -190,6 +190,8 @@ input[type=number]::-webkit-outer-spin-button {
             e.preventDefault();
             
             if (confirm('Are you sure to create purchase?')) {
+                // console.log($(this).serialize());
+                // return false;
                 $.ajax({
                     type: "POST",
                     url: "{{ route('purchase.store') }}",
