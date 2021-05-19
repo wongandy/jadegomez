@@ -171,6 +171,7 @@ input[type=number]::-webkit-outer-spin-button {
                 </div>
 
                 <div class="card-footer">
+                    <input type="hidden" name="token" value="{{ $token }}">
                     <button type="submit" id="create_sale_button" class="btn btn-success" disabled>Create Sale</button>
                     <a href="{{ url()->previous() }}" class="btn btn-default float-right">Go Back</a>
                 </div>

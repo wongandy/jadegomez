@@ -115,6 +115,7 @@ input[type=number]::-webkit-outer-spin-button {
                 </div>
 
                 <div class="card-footer">
+                    <input type="hidden" name="token" value="{{ $token }}">
                     <button type="submit" id="create_transfer_button" class="btn btn-success" disabled onclick="return confirm('Are you sure to create transfer?')">Create Transfer</button>
                     <a href="{{ url()->previous() }}" class="btn btn-default float-right">Go Back</a>
                 </div>

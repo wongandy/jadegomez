@@ -7,6 +7,7 @@ use App\Models\Item;
 use App\Models\Sale;
 use App\Models\Customer;
 use App\Models\BranchItem;
+use Illuminate\Support\Str;
 use App\Models\ItemPurchase;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -38,6 +39,7 @@ class SaleController extends Controller
         DB::statement('SET SESSION group_concat_max_len = 1000000');
         $number = Sale::where('branch_id', auth()->user()->branch_id)->max('number') + 1;
         $sale_number = "DR-" . str_pad($number, 8, "0", STR_PAD_LEFT);
+        session()->put('token', $token = Str::random(10));
 
         $items = Item::select(
             'items.id', 
@@ -52,16 +54,11 @@ class SaleController extends Controller
             // DB::raw("(SELECT adjusted_cost_price FROM item_ins WHERE item_ins.item_id = items.id ORDER BY id DESC LIMIT 1) as cost_price"))->limit(5)->get();
 
         $customers = Customer::select('id', 'name', 'contact_number')->get();
-        return view('sale.create', compact('items', 'customers', 'sale_number'));
+        return view('sale.create', compact('items', 'customers', 'sale_number', 'token'));
     }
 
     public function store(Request $request)
     {
-        // dd($request->all());
-        // $this->validate($request, [
-        //     'items.*.quantity' => 'required|integer|min:1'
-        // ]);
-
         $this->authorize('create sales');
 
         // $customer = Customer::updateOrCreate(
@@ -74,7 +71,17 @@ class SaleController extends Controller
         //         'contact_number' => $request->contact_number
         //     ]
         // );
-        
+
+
+        // \Log::info('token: ' . $request->token);
+        // \Log::info(session()->get('token'));
+
+        if ($request->token != session()->get('token')) {
+            return redirect()->route('sale.index')->with('message', 'Create sale successful!');
+        }
+
+        session()->put('token', Str::random(10));
+
         if ($request->customer == 'new') {
             $customer = Customer::create([
                 'name' => $request->customer_name,
@@ -151,7 +158,6 @@ class SaleController extends Controller
         }
 
         return redirect()->route('sale.index')->with('message', 'Create sale successful!');
-        // return redirect()->route('sale.print', 2);
     }
 
     public function review(Sale $sale)
