@@ -88,10 +88,10 @@
                                                 {{-- @if ($purchase->status != 'void' && (! $purchase->items()->where('status', '!=', 'available')->count())) --}}
                                                 {{-- @if ($sale->status != 'void' && $sale->status != 'paid' && $sale->status != 'unpaid') --}}
                                                 @if ($sale->status != 'void')
-                                                    <form action="{{ route('sale.void', $sale->id) }}" method="POST" style="display: inline-block;">
+                                                    <form action="{{ route('sale.void', $sale->id) }}" class="void_sale_form" method="POST" style="display: inline-block;">
                                                         @csrf
                                                         @method("PUT")
-                                                        <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure to void?')"><i class="fas fa-fw fa-times"></i> Void</button>
+                                                        <button type="submit" class="btn btn-danger"><i class="fas fa-fw fa-times"></i> Void</button>
                                                     </form>
                                                 @endif
                                             @endcan
@@ -118,7 +118,6 @@
                             </tbody>
                         </table>
                     </div>
-
                     <div class="tab-pane fade show" id="all_sales" role="tabpanel" aria-labelledby="all_sales">
                         <table id="all_sales_list" class="table table-bordered table-striped">
                             <thead>
@@ -170,10 +169,10 @@
                                             @can('delete sales')
                                                 {{-- @if ($sale->status != 'void' && $sale->status != 'paid' && $sale->status != 'unpaid') --}}
                                                 @if ($sale->status != 'void')
-                                                    <form action="{{ route('sale.void', $sale->id) }}" method="POST" style="display: inline-block;">
+                                                    <form action="{{ route('sale.void', $sale->id) }}" class="void_sale_form" method="POST" style="display: inline-block;">
                                                         @csrf
                                                         @method("PUT")
-                                                        <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure to void?')"><i class="fas fa-fw fa-times"></i> Void</button>
+                                                        <button type="submit" class="btn btn-danger"><i class="fas fa-fw fa-times"></i> Void</button>
                                                     </form>
                                                 @endif
                                             @endcan
@@ -210,6 +209,15 @@
 @section('js')
     <script>
     $(document).ready(function() {
+        $('.void_sale_form').on('submit', function () {
+            if (confirm('Are you sure to void?')) {
+                $(this).find(":submit").attr('disabled', true);
+            }
+            else {
+                return false;
+            }
+        });
+
         $('#today_sales_list').DataTable({
             "order": []
         });

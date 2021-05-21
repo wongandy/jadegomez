@@ -21,7 +21,7 @@ input[type=number]::-webkit-outer-spin-button {
                 <h3 class="card-title">Create Transfer</h3>
             </div>
 
-            <form class="form-horizontal" action="{{ route('transfer.store') }}" method="POST">
+            <form class="form-horizontal" id="create_transfer_form" action="{{ route('transfer.store') }}" method="POST">
                 @csrf
 
                 <div class="card-body">
@@ -115,8 +115,7 @@ input[type=number]::-webkit-outer-spin-button {
                 </div>
 
                 <div class="card-footer">
-                    <input type="hidden" name="token" value="{{ $token }}">
-                    <button type="submit" id="create_transfer_button" class="btn btn-success" disabled onclick="return confirm('Are you sure to create transfer?')">Create Transfer</button>
+                    <button type="submit" id="create_transfer_button" class="btn btn-success" disabled>Create Transfer</button>
                     <a href="{{ url()->previous() }}" class="btn btn-default float-right">Go Back</a>
                 </div>
             </form>
@@ -213,6 +212,12 @@ input[type=number]::-webkit-outer-spin-button {
             }
             else {
                 $('#transfers_table').attr('hidden', true);
+                $('#create_transfer_button').attr('disabled', true);
+            }
+        });
+
+        $("#create_transfer_form").on('submit', function(){
+            if (confirm('Are you sure to create transfer?')) {
                 $('#create_transfer_button').attr('disabled', true);
             }
         });

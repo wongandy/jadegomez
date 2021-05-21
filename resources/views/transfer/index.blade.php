@@ -79,17 +79,17 @@
                                 <td>{{ $transfer->user->name }}</td>
                                 <td>
                                     @if ($transfer->receiving_branch_id == auth()->user()->branch_id && $transfer->status != 'received' && $transfer->status != 'void') 
-                                        <form action="{{ route('transfer.updatestatus', $transfer) }}" method="POST">
+                                        <form action="{{ route('transfer.updatestatus', $transfer) }}" class="receive_transfer_form" method="POST">
                                             @csrf
-                                            <button class="btn btn-info" type="btn btn-info" onclick="return confirm('Are you sure to receive transfer?');">Receive</button>
+                                            <button class="btn btn-info" type="btn btn-info">Receive</button>
                                         </form>
                                     @endif
                                     @can('delete transfers')
                                         @if ($transfer->status != 'received' && $transfer->status != 'void' && $transfer->sending_branch_id == auth()->user()->branch_id)
-                                            <form action="{{ route('transfer.void', $transfer->id) }}" method="POST" style="display: inline-block;">
+                                            <form action="{{ route('transfer.void', $transfer->id) }}" class="void_transfer_form" method="POST" style="display: inline-block;">
                                                 @csrf
                                                 @method("PUT")
-                                                <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure to void?')"><i class="fas fa-fw fa-times"></i> Void</button>
+                                                <button type="submit" class="btn btn-danger"><i class="fas fa-fw fa-times"></i> Void</button>
                                             </form>
                                         @endif
                                         {{-- <a href="{{ route('purchase.delete', $purchase->id) }}" class="btn btn-danger">Void</a> --}}
@@ -116,6 +116,25 @@
 @section('js')
     <script>
     $(document).ready(function() {
+        $('.void_transfer_form').on('submit', function () {
+            if (confirm('Are you sure to void?')) {
+                $(this).find(":submit").attr('disabled', true);
+            }
+            else {
+                return false;
+            }
+        });
+
+        $('.receive_transfer_form').on('submit', function () {
+            if (confirm('Are you sure to receive transfer?')) {
+                $(this).find(":submit").attr('disabled', true);
+            }
+            else {
+                return false;
+            }
+        });
+
+
         $('#transfers_list').DataTable({
             "order": []
         });

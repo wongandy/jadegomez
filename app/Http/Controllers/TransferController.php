@@ -6,7 +6,6 @@ use App\Models\Item;
 use App\Models\Branch;
 use App\Models\Transfer;
 use App\Models\BranchItem;
-use Illuminate\Support\Str;
 use App\Models\ItemPurchase;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -31,8 +30,6 @@ class TransferController extends Controller
         DB::statement('SET SESSION group_concat_max_len = 1000000');
         $number = Transfer::where('sending_branch_id', auth()->user()->branch_id)->max('number') + 1;
         $transfer_number = "TR-" . str_pad($number, 8, "0", STR_PAD_LEFT);
-        session()->put('token', $token = Str::random(10));
-
         $branch_id = auth()->user()->branch_id;
         $branches = Branch::where('id', '!=', $branch_id)->get();
         $items = Item::select(
@@ -44,19 +41,13 @@ class TransferController extends Controller
             DB::raw("(SELECT CONCAT('[\"', GROUP_CONCAT(serial_number SEPARATOR '\",\"'),'\"]') FROM item_purchase WHERE item_id = items.id AND branch_id = " . $branch_id . " AND status = 'available') AS serial_numbers"),
             DB::raw("(SELECT COUNT(*) FROM item_purchase WHERE item_id = items.id AND branch_id = " . $branch_id . " AND status = 'available') AS on_hand"))->get();
         // dd($items);
-        return view('transfer.create', compact('items', 'branches', 'transfer_number', 'token'));
+        return view('transfer.create', compact('items', 'branches', 'transfer_number'));
         // return view('transfer.create');
     }
 
     public function store(Request $request)
     {
         $this->authorize('create transfers');
-        
-        if ($request->token != session()->get('token')) {
-            return redirect()->route('transfer.index')->with('message', 'Create transfer successful!');
-        }
-
-        session()->put('token', Str::random(10));
         
         // save to db the total quantity of each items for each branch
         foreach ($request->items as $item) {

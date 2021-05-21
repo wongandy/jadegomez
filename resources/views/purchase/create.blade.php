@@ -190,8 +190,8 @@ input[type=number]::-webkit-outer-spin-button {
             e.preventDefault();
             
             if (confirm('Are you sure to create purchase?')) {
-                // console.log($(this).serialize());
-                // return false;
+                $('#create_purchase_button').attr('disabled', true);
+
                 $.ajax({
                     type: "POST",
                     url: "{{ route('purchase.store') }}",
@@ -205,6 +205,7 @@ input[type=number]::-webkit-outer-spin-button {
                         $('#errors').html("<p class='text-danger'>Errors found:</p>");
                         $.each(xhr.responseJSON.errors, function (key, item) {
                             $("#errors").append("<li class='text-danger'>"+item+"</li>");
+                            $('#create_purchase_button').attr('disabled', false);
                         });
                     }
                 });

@@ -61,10 +61,10 @@
                                 <td>
                                     @can('delete purchases')
                                         @if ($purchase->status != 'void' && (! $purchase->items()->where('status', '!=', 'available')->count()))
-                                            <form action="{{ route('purchase.void', $purchase->id) }}" method="POST" style="display: inline-block;">
+                                            <form action="{{ route('purchase.void', $purchase->id) }}" class="void_purchase_form" method="POST" style="display: inline-block;">
                                                 @csrf
                                                 @method("PUT")
-                                                <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure to void?')"><i class="fas fa-fw fa-times"></i> Void</button>
+                                                <button type="submit" class="btn btn-danger"><i class="fas fa-fw fa-times"></i> Void</button>
                                             </form>
                                         @endif
                                         {{-- <a href="{{ route('purchase.delete', $purchase->id) }}" class="btn btn-danger">Void</a> --}}
@@ -87,6 +87,15 @@
 @section('js')
     <script>
     $(document).ready(function() {
+        $('.void_purchase_form').on('submit', function () {
+            if (confirm('Are you sure to void?')) {
+                $(this).find(":submit").attr('disabled', true);
+            }
+            else {
+                return false;
+            }
+        });
+
         $('#purchases_list').DataTable({
             "order": []
         });

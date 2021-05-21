@@ -171,7 +171,6 @@ input[type=number]::-webkit-outer-spin-button {
                 </div>
 
                 <div class="card-footer">
-                    <input type="hidden" name="token" value="{{ $token }}">
                     <button type="submit" id="create_sale_button" class="btn btn-success" disabled>Create Sale</button>
                     <a href="{{ url()->previous() }}" class="btn btn-default float-right">Go Back</a>
                 </div>
@@ -272,7 +271,13 @@ input[type=number]::-webkit-outer-spin-button {
                 // else {
                 //     return confirm('Are you sure to approve sale?');
                 // }
-                return confirm('Are you sure to create sale?');
+
+                if (confirm('Are you sure to create sale?')) {
+                    $('#create_sale_button').attr('disabled', true);
+                }
+                else {
+                    return false;
+                }
             });
 
             $('#search_item').on('select2:select', function(e) {
