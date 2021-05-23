@@ -32,17 +32,23 @@ class TransferController extends Controller
         $transfer_number = "TR-" . str_pad($number, 8, "0", STR_PAD_LEFT);
         $branch_id = auth()->user()->branch_id;
         $branches = Branch::where('id', '!=', $branch_id)->get();
-        $items = Item::select(
-            'items.id', 
-            'name',
-            'upc',
-            'with_serial_number', 
-            'selling_price',
-            DB::raw("(SELECT CONCAT('[\"', GROUP_CONCAT(serial_number SEPARATOR '\",\"'),'\"]') FROM item_purchase WHERE item_id = items.id AND branch_id = " . $branch_id . " AND status = 'available') AS serial_numbers"),
-            DB::raw("(SELECT COUNT(*) FROM item_purchase WHERE item_id = items.id AND branch_id = " . $branch_id . " AND status = 'available') AS on_hand"))->get();
-        // dd($items);
+        $items = DB::table('items')
+                ->join('item_purchase', 'item_purchase.item_id', '=', 'items.id')
+                ->select(
+                    'items.id',
+                    'items.name',
+                    'items.upc',
+                    'items.with_serial_number',
+                    'items.selling_price',
+                    DB::raw('COUNT(item_purchase.item_id) AS on_hand'),
+                    DB::raw("CONCAT('[\"', GROUP_CONCAT(serial_number SEPARATOR '\",\"'),'\"]') AS serial_numbers")
+                )
+                ->where('item_purchase.branch_id', auth()->user()->branch_id)
+                ->where('item_purchase.status', 'available')
+                ->groupBy('item_purchase.item_id')
+                ->get();
+
         return view('transfer.create', compact('items', 'branches', 'transfer_number'));
-        // return view('transfer.create');
     }
 
     public function store(Request $request)

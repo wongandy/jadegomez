@@ -153,7 +153,7 @@ input[type=number]::-webkit-outer-spin-button {
                 let onHand = "<input type='number' class='form-control-plaintext on_hand' name='items[" + rowNumber + "][on_hand]' value='" + item.data('on-hand') + "' tabindex='-1' readonly>";
                 let id = "<input type='hidden' class='item_id' name='items[" + rowNumber + "][item_id]' value='" + item.data('id') + "'>";
                 let withSerialNumber = "<input type='hidden' class='with_serial_number' name='items[" + rowNumber + "][with_serial_number]' value='" + item.data('with-serial-number') + "'>";
-                let serialNumber = (item.data('with-serial-number')) ? "<select name='items[" + rowNumber + "][serial_number][]' class='form-control serial_number input_serial_numbers' multiple='multiple' required>" + selectSerialNumbers + "</select>" : "<input type='hidden' class='serial_number' name='items[" + rowNumber + "][serial_number][]'>";
+                let serialNumber = (item.data('with-serial-number')) ? "<select name='items[" + rowNumber + "][serial_number][]' class='form-control serial_number input_serial_numbers' style='width: 100%; min-width: 200px;' multiple='multiple' required>" + selectSerialNumbers + "</select>" : "<input type='hidden' class='serial_number' name='items[" + rowNumber + "][serial_number][]'>";
                 let quantity = (item.data('with-serial-number')) ? "<input type='number' class='form-control-plaintext quantity' name='items[" + rowNumber + "][quantity]' tabindex='-1' readonly>" : "<input type='number' class='form-control quantity' name='items[" + rowNumber + "][quantity]' min='1' max='" + item.data('on-hand') + "' required>";
                 let costPrice = "<input type='number' class='form-control-plaintext cost_price' name='items[" + rowNumber + "][cost_price]' value='" + item.data('cost-price') + "' tabindex='-1' readonly>";
                 let sellingPrice = "<input type='number' class='form-control-plaintext selling_price' name='items[" + rowNumber + "][selling_price]' value='" + item.data('selling-price') + "' tabindex='-1' readonly>";
@@ -219,6 +219,9 @@ input[type=number]::-webkit-outer-spin-button {
         $("#create_transfer_form").on('submit', function(){
             if (confirm('Are you sure to create transfer?')) {
                 $('#create_transfer_button').attr('disabled', true);
+            }
+            else {
+                return false;
             }
         });
 
