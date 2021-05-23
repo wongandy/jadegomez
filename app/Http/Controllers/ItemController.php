@@ -3,10 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Item;
-use App\Models\ItemPurchase;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
-use App\Http\Requests\ItemRequest;
 use Illuminate\Support\Facades\DB;
 
 class ItemController extends Controller
@@ -14,16 +12,23 @@ class ItemController extends Controller
     public function index()
     {
         $this->authorize('view items');
-        
-        $items = Item::select(
-                    'id',
-                    'name',
-                    'details',
-                    'upc',
-                    'dynamic_cost_price',
-                    'selling_price',
-                    'with_serial_number',
-                    DB::raw("(SELECT COUNT(*) FROM item_purchase WHERE item_id = items.id AND branch_id = " . auth()->user()->branch_id . " AND status = 'available') AS on_hand"))->orderBy('id', 'ASC')->get();
+
+        $items = DB::table('items')
+                    ->join('item_purchase', 'item_purchase.item_id', '=', 'items.id')
+                    ->select(
+                        'items.id',
+                        'items.name',
+                        'items.upc',
+                        'items.dynamic_cost_price',
+                        'items.with_serial_number',
+                        'items.selling_price',
+                        DB::raw('COUNT(item_purchase.item_id) AS on_hand')
+                    )
+                    ->where('item_purchase.branch_id', auth()->user()->branch_id)
+                    ->where('item_purchase.status', 'available')
+                    ->groupBy('item_purchase.item_id')
+                    ->orderBy('items.id', 'ASC')
+                    ->get();
 
         return view('item.index', compact('items'));
     }

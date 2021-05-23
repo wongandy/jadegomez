@@ -87,7 +87,6 @@ input[type=number]::-webkit-outer-spin-button {
                     <div class="form-group row">
                         <label for="search_item" class="col-sm-2 col-form-label">Select Item</label>
 
-                        {{-- <label for="item_id">Item</label> --}}
                         <div class="col-sm-10">
                             <select id="search_item" name="search_item" class="form-control" style="width: 100%;">
                                 <option></option>
@@ -95,8 +94,7 @@ input[type=number]::-webkit-outer-spin-button {
                                     <option data-id="{{ $item->id }}" 
                                         data-name="{{ $item->name }}" 
                                         data-upc="{{ $item->upc }}" 
-                                        data-with-serial-number="{{ $item->with_serial_number }}" 
-                                        data-price="{{ $item->price }}"
+                                        data-with-serial-number="{{ $item->with_serial_number }}"
                                         data-selling-price="{{ $item->selling_price }}"
                                         @if ($item->on_hand) 
                                             data-on-hand="{{ $item->on_hand }}" 
@@ -104,10 +102,6 @@ input[type=number]::-webkit-outer-spin-button {
                                             data-on-hand="0"
                                         @endif
                                         data-serial-numbers="{{ $item->serial_numbers}}"
-                                        data-cost-price="{{ $item->cost_price }}"
-                                        {{-- @if ($item->purchases->where('supplier_id', $supplier->id)->first()) 
-                                            data-cost-price="{{ $item->purchases->where('supplier_id', $supplier->id)->last()->pivot->cost_price }}" 
-                                        @endif --}}
                                         value="{{ $item->id == old('item_id') ? old('item_id') : $item->id }}" 
                                         {{ $item->id == old('item_id') ? 'selected' : '' }} 
                                     >{{ $item->name }}@if ($item->upc) ({{ $item->upc }}) @endif
@@ -130,7 +124,6 @@ input[type=number]::-webkit-outer-spin-button {
                                     <th>UPC</th>
                                     <th>On Hand</th>
                                     <th class="w-25">Serial Number</th>
-                                    {{-- <th>Cost Price</th> --}}
                                     <th>Qty</th>
                                     <th>Selling Price</th>
                                     <th>Amount</th>

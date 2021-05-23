@@ -38,21 +38,23 @@ class SaleController extends Controller
         DB::statement('SET SESSION group_concat_max_len = 1000000');
         $number = Sale::where('branch_id', auth()->user()->branch_id)->max('number') + 1;
         $sale_number = "DR-" . str_pad($number, 8, "0", STR_PAD_LEFT);
+        $items = DB::table('items')
+                    ->join('item_purchase', 'item_purchase.item_id', '=', 'items.id')
+                    ->select(
+                        'items.id',
+                        'items.name',
+                        'items.upc',
+                        'items.with_serial_number',
+                        'items.selling_price',
+                        DB::raw('COUNT(item_purchase.item_id) AS on_hand'),
+                        DB::raw("CONCAT('[\"', GROUP_CONCAT(serial_number SEPARATOR '\",\"'),'\"]') AS serial_numbers")
+                    )
+                    ->where('item_purchase.branch_id', auth()->user()->branch_id)
+                    ->where('item_purchase.status', 'available')
+                    ->groupBy('item_purchase.item_id')
+                    ->get();
 
-        $items = Item::select(
-            'items.id', 
-            'name',
-            'upc',
-            'with_serial_number', 
-            'selling_price',
-            DB::raw("(SELECT CONCAT('[\"', GROUP_CONCAT(serial_number SEPARATOR '\",\"'),'\"]') FROM item_purchase WHERE item_id = items.id AND branch_id = " . auth()->user()->branch_id . " AND status = 'available') AS serial_numbers"),
-            DB::raw("(SELECT quantity FROM branch_item WHERE item_id = items.id AND branch_id = " . auth()->user()->branch_id . ") AS on_hand"))->get();
-            // DB::raw("(SELECT COUNT(*) FROM item_purchase WHERE item_id = items.id AND branch_id = " . auth()->user()->branch_id . " AND status = 'available') AS on_hand"),
-            // DB::raw("(SELECT cost_price FROM item_purchase WHERE item_purchase.item_id = items.id AND branch_id = " . auth()->user()->branch_id . " ORDER BY id DESC LIMIT 1) AS cost_price"))->get();
-            // DB::raw("(SELECT adjusted_cost_price FROM item_ins WHERE item_ins.item_id = items.id ORDER BY id DESC LIMIT 1) as cost_price"))->limit(5)->get();
-
-        $customers = Customer::select('id', 'name', 'contact_number')->get();
-        return view('sale.create', compact('items', 'customers', 'sale_number'));
+        return view('sale.create', compact('items', 'sale_number'));
     }
 
     public function store(Request $request)
