@@ -12,21 +12,19 @@ class ItemController extends Controller
     public function index()
     {
         $this->authorize('view items');
-
         $items = DB::table('items')
-                    ->join('item_purchase', 'item_purchase.item_id', '=', 'items.id')
+                    ->leftJoin('item_purchase',
+                        'item_purchase.item_id', '=', DB::raw('items.id AND branch_id = ' . auth()->user()->branch_id . ' AND status = "available"'))
                     ->select(
                         'items.id',
                         'items.name',
                         'items.upc',
                         'items.dynamic_cost_price',
-                        'items.with_serial_number',
+                        // 'items.with_serial_number',
                         'items.selling_price',
                         DB::raw('COUNT(item_purchase.item_id) AS on_hand')
                     )
-                    ->where('item_purchase.branch_id', auth()->user()->branch_id)
-                    ->where('item_purchase.status', 'available')
-                    ->groupBy('item_purchase.item_id')
+                    ->groupBy('items.id')
                     ->orderBy('items.id', 'ASC')
                     ->get();
 

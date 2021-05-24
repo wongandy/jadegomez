@@ -26,7 +26,7 @@
                             <th>UPC</th>
                             <th>Cost Price</th>
                             <th>Selling Price</th>
-                            <th>With Serial Number</th>
+                            {{-- <th>With Serial Number</th> --}}
                             @canany(['edit items', 'delete items'])
                                 <th>Action</th>
                             @endcanany
@@ -41,7 +41,7 @@
                                 <td>{{ $item->upc }}</td>
                                 <td>{{ $item->dynamic_cost_price }}</td>
                                 <td>{{ $item->selling_price }}</td>
-                                <td>{{ $item->with_serial_number ? 'Yes' : 'No' }}</td>
+                                {{-- <td>{{ $item->with_serial_number ? 'Yes' : 'No' }}</td> --}}
                                 <td>
                                     @can('edit items')
                                         <a href="{{ route('item.edit', $item->id) }}" class="btn btn-info">Edit</a>
