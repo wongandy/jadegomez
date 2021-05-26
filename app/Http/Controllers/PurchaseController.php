@@ -27,10 +27,20 @@ class PurchaseController extends Controller
         // dd($test);
         $this->authorize('view purchases');
         DB::statement('SET SESSION group_concat_max_len = 1000000');
-        $purchases = Purchase::with('items', 'supplier', 'user')->where('branch_id', auth()->user()->branch_id)->orderBy('id', 'DESC')->get();
-        // $purchases = Purchase::get();
+        $purchases = Purchase::with(['items', 'supplier', 'user'])
+            ->select(
+                'purchases.id',
+                'purchases.updated_at',
+                'purchases.purchase_number',
+                'purchases.status',
+                DB::raw('SUM(item_purchase.status != "available") AS with_item_sold'),
+                'supplier_id',
+                'user_id'
+                )
+            ->join('item_purchase', 'item_purchase.purchase_id', '=', 'purchases.id')
+            ->where('purchases.branch_id', auth()->user()->branch_id)->orderBy('id', 'DESC')
+            ->groupBy('purchases.id')->get();
         
-        // dd($purchases->first()->items()->where('status', '!=', 'available')->count());
         return view('purchase.index', compact('purchases'));
     }
 

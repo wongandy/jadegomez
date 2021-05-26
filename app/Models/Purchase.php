@@ -40,9 +40,4 @@ class Purchase extends Model
     {
         return $this->belongsTo(User::class);
     }
-
-    public function hasSoldItem()
-    {
-        return $this->belongsToMany(Item::class)->wherePivot('status', 'sold');
-    }
 }
