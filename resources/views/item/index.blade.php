@@ -42,19 +42,18 @@
                                 <td>{{ $item->dynamic_cost_price }}</td>
                                 <td>{{ $item->selling_price }}</td>
                                 {{-- <td>{{ $item->with_serial_number ? 'Yes' : 'No' }}</td> --}}
-                                <td>
-                                    @can('edit items')
+                                @can('edit items')
+                                    <td>
                                         <a href="{{ route('item.edit', $item->id) }}" class="btn btn-info">Edit</a>
-                                    @endcan
-
-                                    {{-- @can('delete items') --}}
+                                        {{-- @can('delete items') --}}
                                         {{-- <form action="{{ route('item.destroy', $item->id) }}" method="POST" style="display: inline-block;">
                                             @csrf
                                             @method("DELETE")
                                             <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure to delete?')">Delete</button>
                                         </form> --}}
-                                    {{-- @endcan --}}
-                                </td>
+                                        {{-- @endcan --}}
+                                    </td>
+                                @endcan
                             </tr>
                         @empty
                             <tr>
