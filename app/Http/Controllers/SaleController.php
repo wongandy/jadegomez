@@ -10,13 +10,13 @@ use App\Models\BranchItem;
 use App\Models\ItemPurchase;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Http\Requests\SaleFormRequest;
 
 class SaleController extends Controller
 {
     public function index()
     {
         $this->authorize('view sales');
-
         $today_sales = Sale::with('items', 'customer', 'user')
             ->where('branch_id', auth()->user()->branch_id)
             ->where(function($query) {
@@ -57,97 +57,74 @@ class SaleController extends Controller
         return view('sale.create', compact('items', 'sale_number'));
     }
 
-    public function store(Request $request)
+    public function store(SaleFormRequest $request)
     {
         $this->authorize('create sales');
+        DB::transaction(function() use ($request) {
+            if ($request->customer == 'new') {
+                $customer = Customer::create([
+                    'name' => $request->customer_name,
+                    'contact_number' => $request->contact_number
+                ]);
 
-        // $customer = Customer::updateOrCreate(
-        //     [
-        //         'name' => $request->customer_name,
-        //         'contact_number' => $request->contact_number
-        //     ],
-        //     [
-        //         'name' => $request->customer_name,
-        //         'contact_number' => $request->contact_number
-        //     ]
-        // );
-
-        if ($request->customer == 'new') {
-            $customer = Customer::create([
-                'name' => $request->customer_name,
-                'contact_number' => $request->contact_number
-            ]);
-
-            $customer_id = $customer->id;
-        }
-        else {
-            $customer_id = $request->customer_id;
-        }
-
-        $branch_id = $request->user()->branch_id;
-
-        $sale = [];
-        $f = 0;
-
-        foreach ($request->items as $item) {
-            if ($item['with_serial_number']) {
-                $itemPurchases = ItemPurchase::where('item_id', $item['item_id'])->where('branch_id', $branch_id)->whereIn('serial_number', $item['serial_number'])->where('status', 'available')->get();
+                $customer_id = $customer->id;
             }
             else {
-                $itemPurchases = ItemPurchase::where('item_id', $item['item_id'])->where('branch_id', $branch_id)->where('status', 'available')->limit($item['quantity'])->get();
-            }
-            
-            foreach ($itemPurchases as $itemPurchase) {
-                $itemPurchase->update(['status' => 'for approval']);
+                $customer_id = $request->customer_id;
             }
 
-            for ($i = 0; $i < $item['quantity']; $i++) {
-                $sale[$f]['item_id'] = $item['item_id'];
-                $sale[$f]['branch_id'] = $branch_id;
-                $sale[$f]['item_purchase_id'] = $itemPurchases[$i]->id;
-                $sale[$f]['sold_price'] = $item['selling_price'];
-                $sale[$f]['created_at'] = date('Y-m-d H:i:s');
-                $sale[$f]['updated_at'] = date('Y-m-d H:i:s');
-                // $purchase[$f]['adjusted_cost_price'] = round(($item['total-cost-price'] + ($item['cost-price'] * $item['qty'])) / ($item['total-qty'] + $item['qty']), 2);
-                
-                // if ($item['with_serial_number']) {
-                //     $sale[$f]['serial_number'] = $item['serial_number'][$i];
-                // }
-                // else {
-                //     $sale[$f]['serial_number'] = NULL;
-                // }
+            $branch_id = $request->user()->branch_id;
 
-                $f++;
-            }    
+            $sale = [];
+            $f = 0;
 
-            // save to db the total quantity of each items for each branch  
-            $branchItem = BranchItem::where(['branch_id' => $branch_id, 'item_id' => $item['item_id']])->first()->decrement('quantity', $item['quantity']);
-        }
+            foreach ($request->items as $item) {
+                if ($item['with_serial_number']) {
+                    $itemPurchases = ItemPurchase::where('item_id', $item['item_id'])->where('branch_id', $branch_id)->whereIn('serial_number', $item['serial_number'])->where('status', 'available')->get();
+                }
+                else {
+                    $itemPurchases = ItemPurchase::where('item_id', $item['item_id'])->where('branch_id', $branch_id)->where('status', 'available')->limit($item['quantity'])->get();
+                }
 
-        $number = Sale::where('branch_id', auth()->user()->branch_id)->max('number') + 1;
-        $sale_number = "DR-" . str_pad($number, 8, "0", STR_PAD_LEFT);
+                foreach ($itemPurchases as $itemPurchase) {
+                    $itemPurchase->update(['status' => 'for approval']);
+                }
 
-        Sale::create([
-            'customer_id' => $customer_id,
-            'branch_id' => $branch_id,
-            'user_id' => $request->user()->id,
-            'number' => $number,
-            'sale_number' => $sale_number,
-            'gross_total' => $request->gross_total,
-            'discount' => $request->discount,
-            'net_total' => $request->net_total
-        ])->items()->attach($sale);
+                for ($i = 0; $i < $item['quantity']; $i++) {
+                    $sale[$f]['item_id'] = $item['item_id'];
+                    $sale[$f]['branch_id'] = $branch_id;
+                    $sale[$f]['item_purchase_id'] = $itemPurchases[$i]->id;
+                    $sale[$f]['sold_price'] = $item['selling_price'];
+                    $sale[$f]['created_at'] = date('Y-m-d H:i:s');
+                    $sale[$f]['updated_at'] = date('Y-m-d H:i:s');
+                    $f++;
+                }
+            }
 
-        
-        // update the cost price of each items as it is dynamic
-        foreach ($request->items as $items) {
-            $dynamic_cost_price = DB::select("SELECT ROUND(SUM(total_cost_price) / SUM(qty), 2) AS dynamic_cost_price FROM (SELECT COUNT(item_id) as qty, (COUNT(item_id) * cost_price) AS total_cost_price FROM `item_purchase` where status = 'available' AND item_id = " . $items['item_id'] . " GROUP BY purchase_id) as T");
-            $item = Item::find($items['item_id']);
-            $item->dynamic_cost_price = $dynamic_cost_price[0]->dynamic_cost_price;
-            $item->save();
-        }
+            $number = Sale::where('branch_id', auth()->user()->branch_id)->max('number') + 1;
+            $sale_number = "DR-" . str_pad($number, 8, "0", STR_PAD_LEFT);
 
-        return redirect()->route('sale.index')->with('message', 'Create sale successful!');
+            Sale::create([
+                'customer_id' => $customer_id,
+                'branch_id' => $branch_id,
+                'user_id' => $request->user()->id,
+                'number' => $number,
+                'sale_number' => $sale_number,
+                'gross_total' => $request->gross_total,
+                'discount' => $request->discount,
+                'net_total' => $request->net_total
+            ])->items()->attach($sale);
+
+            // update the cost price of each items as it is dynamic
+            foreach ($request->items as $items) {
+                $dynamic_cost_price = DB::select("SELECT ROUND(SUM(total_cost_price) / SUM(qty), 2) AS dynamic_cost_price FROM (SELECT COUNT(item_id) as qty, (COUNT(item_id) * cost_price) AS total_cost_price FROM `item_purchase` where status = 'available' AND item_id = " . $items['item_id'] . " GROUP BY purchase_id) as T");
+                $item = Item::find($items['item_id']);
+                $item->dynamic_cost_price = $dynamic_cost_price[0]->dynamic_cost_price;
+                $item->save();
+            }
+
+            $request->session()->flash('message', 'Create sale successful!');
+        });
     }
 
     public function review(Sale $sale)
@@ -167,7 +144,6 @@ class SaleController extends Controller
 
     public function updateStatus(Request $request, Sale $sale)
     {
-        // dd($sale);
         $status = $request->status;
         $sale = Sale::find($sale->id);
         $sale->status = $status;

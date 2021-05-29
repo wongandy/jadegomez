@@ -252,21 +252,29 @@ input[type=number]::-webkit-outer-spin-button {
                 $('#contact_number').attr('readonly', true).val(data.contact_number);
             });
 
-            
-
-            // return confirm('Are you sure to create sale?')
-
-            $("#create_sale_form").on('submit', function(){
-                // if ($('#status').val() == 'paid' && parseFloat($('#cash_tendered').val()) < parseFloat($('#net_total').val())) {
-                //     alert('Amount is not fully paid');
-                //     return false;
-                // }
-                // else {
-                //     return confirm('Are you sure to approve sale?');
-                // }
+            $(document).on('submit', '#create_sale_form', function (e) {
+                e.preventDefault();
 
                 if (confirm('Are you sure to create sale?')) {
                     $('#create_sale_button').attr('disabled', true);
+
+                    $.ajax({
+                        type: "POST",
+                        url: "{{ route('sale.store') }}",
+                        headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')},
+                        data: $(this).serialize(),
+                        success: function () {
+                            location.href = "{{ route('sale.index') }}";
+                        },
+                        error: function(xhr, status, error) {
+                            $('#errors').html('');
+                            $('#errors').html("<p class='text-danger'>Errors found:</p>");
+                            $.each(xhr.responseJSON.errors, function (key, item) {
+                                $("#errors").append("<li class='text-danger'>"+item+"</li>");
+                                $('#create_sale_button').attr('disabled', false);
+                            });
+                        }
+                    });
                 }
                 else {
                     return false;
