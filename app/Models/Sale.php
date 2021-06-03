@@ -40,6 +40,7 @@ class Sale extends Model
             'item_sale.sold_price',
             'item_sale.item_purchase_id'])
         ->join('item_purchase', 'item_sale.item_purchase_id', '=', 'item_purchase.id')
+        ->orderBy('item_sale.id', 'ASC')
         ->groupBy('item_sale.item_id', 'item_sale.sale_id');
     }
 
