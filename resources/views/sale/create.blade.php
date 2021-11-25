@@ -294,7 +294,7 @@ input[type=number]::-webkit-outer-spin-button {
                         selectSerialNumbers += "<option>" + value + "</option>";
                     });
                     
-                    let name = "<input type='string' class='form-control-plaintext' value='" + item.data('name') + "' tabindex='-1' readonly>";
+                    let name = "<input type='string' class='form-control-plaintext' name='items[" + rowNumber + "][name]' value='" + item.data('name') + "' tabindex='-1' readonly>";
                     let upc = "<input type='string' class='form-control-plaintext' value='" + item.data('upc') + "' tabindex='-1' readonly>";;
                     let onHand = "<input type='number' class='form-control-plaintext on_hand' name='items[" + rowNumber + "][on_hand]' value='" + item.data('on-hand') + "' tabindex='-1' readonly>";
                     let id = "<input type='hidden' class='item_id' name='items[" + rowNumber + "][item_id]' value='" + item.data('id') + "'>";

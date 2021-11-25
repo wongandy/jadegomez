@@ -11,6 +11,7 @@ use App\Models\ItemPurchase;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Requests\SaleFormRequest;
+use Yajra\Datatables\Datatables;
 
 class SaleController extends Controller
 {
@@ -24,12 +25,8 @@ class SaleController extends Controller
                ->orWhere('status', '=', 'for approval');
            })
             ->orderByDesc('id')->get();
-        
-        $all_sales = Sale::with('items', 'customer', 'user')
-            ->where('branch_id', auth()->user()->branch_id)
-            ->orderByDesc('id')->get();
             
-        return view('sale.index', compact(['today_sales', 'all_sales']));
+        return view('sale.index', compact(['today_sales']));
     }
 
     public function create()
@@ -77,13 +74,18 @@ class SaleController extends Controller
 
             $sale = [];
             $f = 0;
+            $details = '';
 
             foreach ($request->items as $item) {
+                $details .= $item['quantity'] . ' x ' . $item['name'] . ' at ' . number_format($item['selling_price'], 2, '.', ',') . '<br>';
+
                 if ($item['with_serial_number']) {
                     $itemPurchases = ItemPurchase::where('item_id', $item['item_id'])->where('branch_id', $branch_id)->whereIn('serial_number', $item['serial_number'])->where('status', 'available')->get();
+                    $details .= '(' . $itemPurchases->implode('serial_number', ', ') . ')' . '<br><br>';
                 }
                 else {
                     $itemPurchases = ItemPurchase::where('item_id', $item['item_id'])->where('branch_id', $branch_id)->where('status', 'available')->limit($item['quantity'])->get();
+                    $details .= '<br>';
                 }
 
                 foreach ($itemPurchases as $itemPurchase) {
@@ -110,6 +112,7 @@ class SaleController extends Controller
                 'user_id' => $request->user()->id,
                 'number' => $number,
                 'sale_number' => $sale_number,
+                'details' => $details,
                 'gross_total' => $request->gross_total,
                 'discount' => $request->discount,
                 'net_total' => $request->net_total
@@ -222,5 +225,68 @@ class SaleController extends Controller
         }
 
         return redirect()->route('sale.index')->with('message', 'Sale ' . $sale->sale_number .' has been voided!');
+    }
+
+    public function getAllSales(Request $request) {
+        if ($request->ajax()) {
+            $sales = Sale::with('items', 'customer', 'user', 'branch', 'approvedByUser')
+            ->select('sales.*')
+            ->where('branch_id', auth()->user()->branch_id)
+            ->orderByDesc('id');
+
+            return Datatables::of($sales)
+                ->addIndexColumn()
+                ->editColumn('details', function($sales) {
+                    return $sales->details;
+                })
+                ->editColumn('approvedByUser', function($sales) {
+                    if ($sales->approvedByUser) {
+                        return $sales->approvedByUser->name;
+                    }
+                    
+                    return '';
+                })
+                ->editColumn('status', function($sales) {
+                    if ($sales->status == 'void') {
+                        return "<span class='badge badge-danger'>$sales->status</span>";
+                    }
+                    elseif ($sales->status == 'for approval' || $sales->status == 'unpaid') {
+                        return "<span class='badge badge-warning'>$sales->status</span>";
+                    }
+                    else {
+                        return "<span class='badge badge-success'>$sales->status</span>";
+                    }
+                })
+                ->addColumn('action', function($sales){
+                    $actions = '';
+                    
+                    if (auth()->user()->can('delete sales')) {
+                        if ($sales->status != 'void') {
+                            $actions .= "<form action='" . route('sale.void', $sales->id) . "' class='void_sale_form' method='POST' style='display: inline-block;'>
+                                            <input type='hidden' name='_token' value='" . csrf_token() . "'>
+                                            <input type='hidden' name='_method' value='PUT'>
+                                            <button type='submit' class='btn btn-danger'><i class='fas fa-fw fa-times'></i> Void</button>
+                                        </form>";
+                        }
+                    }
+
+                    if (auth()->user()->can('approve sales')) {
+                        if ($sales->status == 'for approval' || $sales->status == 'unpaid') {
+                            $actions .= "<a href='" . route('sale.review', $sales->id) . "' class='btn btn-info'><i class='fas fa-fw fa-binoculars'></i> Review</a>";
+                        }
+                    }
+
+                    
+                    if (auth()->user()->can('print unlimited sale DR')) {
+                        if ($sales->status == 'paid' || $sales->status == 'unpaid') {
+                            $actions .= "<a href='" . route('sale.print', $sales->id) . "' class='btn btn-info'><i class='fas fa-fw fa-print'></i> Print DR</a>";
+                        }
+                    }
+                       
+                    return $actions;
+                })
+                ->rawColumns(['items', 'details', 'status', 'action'])
+                ->make(true);
+        }
     }
 }

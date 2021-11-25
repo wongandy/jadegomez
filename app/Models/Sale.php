@@ -15,7 +15,7 @@ class Sale extends Model
 {
     use HasFactory, LogsActivity;
 
-    protected $fillable = ['customer_id', 'branch_id', 'user_id', 'sale_number', 'number', 'gross_total', 'discount', 'net_total', 'status'];
+    protected $fillable = ['customer_id', 'branch_id', 'user_id', 'sale_number', 'number', 'details', 'gross_total', 'discount', 'net_total', 'status'];
     protected static $logName = 'Sale';
     protected function serializeDate(DateTimeInterface $date)
     {

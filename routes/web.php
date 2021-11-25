@@ -52,6 +52,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('sale/endofday', [SaleController::class, 'endOfDay'])->name('sale.endofday');
     Route::put('sale/{sale}/void', [SaleController::class, 'void'])->name('sale.void');
     Route::get('customer/dataAjax', [CustomerController::class, 'dataAjax'])->name('customer.dataajax');
+    Route::get('sale/getAllSales', [SaleController::class, 'getAllSales'])->name('sale.getAllSales');
 
     Route::get('transfer', [TransferController::class, 'index'])->name('transfer.index');
     Route::get('transfer/create', [TransferController::class, 'create'])->name('transfer.create');
