@@ -9,13 +9,18 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use DateTimeInterface;
 
 class Purchase extends Model
 {
     use HasFactory, LogsActivity;
 
-    protected $fillable = ['branch_id', 'supplier_id', 'user_id', 'number', 'purchase_number', 'status'];
+    protected $fillable = ['branch_id', 'supplier_id', 'user_id', 'number', 'details', 'purchase_number', 'status'];
     protected static $logName = 'Purchase';
+    protected function serializeDate(DateTimeInterface $date)
+    {
+        return $date->format('Y-m-d h:i:s A');
+    }
 
     public function getDescriptionForEvent(string $eventName): string
     {
@@ -28,7 +33,16 @@ class Purchase extends Model
 
     public function items()
     {
-        return $this->belongsToMany(Item::class)->select([DB::raw("COUNT(*) AS quantity"), DB::raw("CONCAT('(', GROUP_CONCAT(serial_number SEPARATOR ', '), ')') AS serial_number"), 'items.id', 'items.name', 'status'])->withPivot(['cost_price', 'status', 'serial_number'])->as('show')->groupBy('item_id', 'purchase_id');
+        return $this->belongsToMany(Item::class)->select(
+            [DB::raw("COUNT(*) AS quantity"),
+            DB::raw("CONCAT('(', GROUP_CONCAT(serial_number SEPARATOR ', '), ')') AS serial_number"),
+            'items.id',
+            'items.name', 
+            'status'])->withPivot([
+                'cost_price', 
+                'status', 
+                'serial_number'])->as('show')
+            ->groupBy('item_id', 'purchase_id');
     }
 
     // public function items()

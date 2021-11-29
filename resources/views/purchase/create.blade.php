@@ -118,8 +118,8 @@ input[type=number]::-webkit-outer-spin-button {
             if (! itemsSelected.includes(item.data('id'))) {
                 itemsSelected.push(item.data('id'));
                 
-                let name = item.data('name');
-                let upc = item.data('upc');
+                let name = "<input type='string' class='form-control-plaintext' name='items[" + rowNumber + "][name]' value='" + item.data('name') + "' tabindex='-1' readonly>";
+                let upc = "<input type='string' class='form-control-plaintext' value='" + item.data('upc') + "' tabindex='-1' readonly>";
                 let id = "<input type='hidden' class='item_id' name='items[" + rowNumber + "][item_id]' value='" + item.data('id') + "'>";
                 let withSerialNumber = "<input type='hidden' class='with_serial_number' name='items[" + rowNumber + "][with_serial_number]' value='" + item.data('with-serial-number') + "'>";
                 let serialNumber = (item.data('with-serial-number')) ? "<select name='items[" + rowNumber + "][serial_number][]' class='form-control serial_number input_serial_numbers' style='width: 100%; min-width: 200px;' multiple required></select>" : "";

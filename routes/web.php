@@ -42,6 +42,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('purchase/{supplier}/create', [PurchaseController::class, 'create'])->name('purchase.create');
     Route::post('purchase/store', [PurchaseController::class, 'store'])->name('purchase.store');
     Route::put('purchase/{purchase}/void', [PurchaseController::class, 'void'])->name('purchase.void');
+    Route::get('purchase/getAllPurchases', [PurchaseController::class, 'getAllPurchases'])->name('purchase.getAllPurchases');
 
     Route::get('sale', [SaleController::class, 'index'])->name('sale.index');
     Route::get('sale/create', [SaleController::class, 'create'])->name('sale.create');

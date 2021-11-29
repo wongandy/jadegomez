@@ -285,7 +285,7 @@ class SaleController extends Controller
                        
                     return $actions;
                 })
-                ->rawColumns(['items', 'details', 'status', 'action'])
+                ->rawColumns(['details', 'status', 'action'])
                 ->make(true);
         }
     }

@@ -9,39 +9,14 @@ use App\Models\BranchItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Requests\PurchaseFormRequest;
+use Yajra\Datatables\Datatables;
 
 class PurchaseController extends Controller
 {
     public function index()
     {
-        // $a = Item::find(1);
-        // $a->dynamic_cost_price = 31;
-        // $a->save();
-        // $test=DB::select("SELECT SUM(total_cost_price) / SUM(qty) AS dynamic_cost_price FROM (SELECT COUNT(item_id) as qty, (COUNT(item_id) * cost_price) AS total_cost_price FROM `item_purchase` where status = 'available' AND item_id = 1 GROUP BY purchase_id) as T");
-        
-        // foreach ($test as $t) {
-        //     $item = Item::find(1);
-        //     $item->dynamic_cost_price = $t->dynamic_cost_price;
-        //     $item->save();
-        // }
-        // dd($test);
         $this->authorize('view purchases');
-        DB::statement('SET SESSION group_concat_max_len = 1000000');
-        $purchases = Purchase::with(['items', 'supplier', 'user'])
-            ->select(
-                'purchases.id',
-                'purchases.updated_at',
-                'purchases.purchase_number',
-                'purchases.status',
-                DB::raw('SUM(item_purchase.status != "available") AS with_item_sold'),
-                'supplier_id',
-                'user_id'
-                )
-            ->join('item_purchase', 'item_purchase.purchase_id', '=', 'purchases.id')
-            ->where('purchases.branch_id', auth()->user()->branch_id)->orderBy('id', 'DESC')
-            ->groupBy('purchases.id')->get();
-        
-        return view('purchase.index', compact('purchases'));
+        return view('purchase.index');
     }
 
     public function create(Supplier $supplier)
@@ -62,8 +37,18 @@ class PurchaseController extends Controller
 
         $purchase = [];
         $f = 0;
+        $details = '';
         
         foreach ($request->items as $item) {
+            $details .= $item['quantity'] . ' x ' . $item['name'] . ' at ' . number_format($item['cost_price'], 2, '.', ',')  . '<br>';
+
+            if ($item['with_serial_number']) {
+                $details .= '(' . implode(', ', $item['serial_number']) . ')<br><br>';
+            }
+            else {
+                $details .= '<br>';
+            }
+
             for ($i = 0; $i < $item['quantity']; $i++) {
                 $purchase[$f]['item_id'] = $item['item_id'];
                 $purchase[$f]['branch_id'] = $request->user()->branch_id;
@@ -103,7 +88,8 @@ class PurchaseController extends Controller
             'branch_id' => $request->user()->branch_id,
             'number' => $number,
             'user_id' => $request->user()->id,
-            'purchase_number' => $request->purchase_number
+            'purchase_number' => $request->purchase_number,
+            'details' => $details
         ])->items()->attach($purchase);
 
         // update the cost price of each items as it is dynamic
@@ -119,43 +105,52 @@ class PurchaseController extends Controller
 
     public function void(Purchase $purchase)
     {
-        $purchase = Purchase::where('id', $purchase->id)->first();
-        $purchase->update(['status' => 'void']);
-        // foreach ($purchase->items as $item) {
-        //     echo $item->quantity . ' ' . $item->name . '<br>';
-        // }
+        $sold = Purchase::select(DB::raw('SUM(item_purchase.status != "available") AS with_item_sold'))
+            ->where('purchases.purchase_number', $purchase->purchase_number)
+            ->where('purchases.id', $purchase->id)
+            ->where('item_purchase.status', '!=', 'available')
+            ->join('item_purchase', 'item_purchase.purchase_id', '=', 'purchases.id')
+            ->get();
 
-        foreach ($purchase->items as $item) {
-            $branchItem = BranchItem::where(['branch_id' => auth()->user()->branch_id, 'item_id' => $item->id])->first();
+        if (! $sold[0]->with_item_sold) {
+            $purchase = Purchase::where('id', $purchase->id)->first();
+            $purchase->update(['status' => 'void']);
 
-            if ($branchItem !== null) {
-                $branchItem->decrement('quantity', $item->quantity);
+            foreach ($purchase->items as $item) {
+                $branchItem = BranchItem::where(['branch_id' => auth()->user()->branch_id, 'item_id' => $item->id])->first();
+
+                if ($branchItem !== null) {
+                    $branchItem->decrement('quantity', $item->quantity);
+                }
+                else {
+                    $branchItem = BranchItem::create([
+                        'branch_id' => auth()->user()->branch_id,
+                        'item_id' => $item->id,
+                        'quantity' => $item->quantity
+                    ]);
+                }
             }
-            else {
-                $branchItem = BranchItem::create([
-                    'branch_id' => auth()->user()->branch_id,
-                    'item_id' => $item->id,
-                    'quantity' => $item->quantity
-                ]);
+
+            $purchase->items()->update(['status' => 'void']);
+
+            // update the cost price of each items as it is dynamic
+            foreach ($purchase->items as $items) {
+                $dynamic_cost_price = DB::select("SELECT ROUND(SUM(total_cost_price) / SUM(qty), 2) AS dynamic_cost_price FROM (SELECT COUNT(item_id) as qty, (COUNT(item_id) * cost_price) AS total_cost_price FROM `item_purchase` where status = 'available' AND item_id = " . $items->id . " GROUP BY purchase_id) as T");
+                $item = Item::find($items->id);
+                $item->dynamic_cost_price = $dynamic_cost_price[0]->dynamic_cost_price;
+                $item->save();
             }
+
+            return redirect()->route('purchase.index')
+                ->with('message', 'Purchase ' . $purchase->purchase_number .' has been voided!');
+        }
+        else {
+            return redirect()->route('purchase.index')
+                ->with('type', 'danger')
+                ->with('message', 'Purchase ' . $purchase->purchase_number .' cannot be voided! One or more of the items has already been sold! ');
         }
 
-        // dd($purchase->items);
-        $purchase->items()->update(['status' => 'void']);
-
-        // update the cost price of each items as it is dynamic
-        foreach ($purchase->items as $items) {
-            $dynamic_cost_price = DB::select("SELECT ROUND(SUM(total_cost_price) / SUM(qty), 2) AS dynamic_cost_price FROM (SELECT COUNT(item_id) as qty, (COUNT(item_id) * cost_price) AS total_cost_price FROM `item_purchase` where status = 'available' AND item_id = " . $items->id . " GROUP BY purchase_id) as T");
-            $item = Item::find($items->id);
-            $item->dynamic_cost_price = $dynamic_cost_price[0]->dynamic_cost_price;
-            $item->save();
-        }
-
-        // $purchase->updateExistingPivot(1, [
-        //     'status' => 'void'
-        // ]);
-        // return redirect()->route('purchase.index');
-        return redirect()->route('purchase.index')->with('message', 'Purchase ' . $purchase->purchase_number .' has been voided!');
+        
     }
 
     public function supplier()
@@ -169,5 +164,47 @@ class PurchaseController extends Controller
     {
         $this->authorize('create purchases');
         return redirect()->route('purchase.create', $request->supplier_id);
+    }
+
+    public function getAllPurchases(Request $request) {
+        if ($request->ajax()) {
+            $purchases = Purchase::with('supplier', 'user')
+                ->select('purchases.*')
+                ->where('branch_id', auth()->user()->branch_id)
+                ->orderByDesc('id');
+
+            return Datatables::of($purchases)
+                ->addIndexColumn()
+                ->editColumn('details', function($purchases) {
+                    return $purchases->details;
+                })
+                ->editColumn('status', function($purchases) {
+                    if ($purchases->status == 'void') {
+                        return "<span class='badge badge-danger'>$purchases->status</span>";
+                    }
+                    else {
+                        return "<span class='badge badge-success'>$purchases->status</span>";
+                    }
+                })
+                ->addColumn('action', function($purchases){
+                    $actions = '';
+                    
+                    if (auth()->user()->can('delete purchases')) {
+                        if ($purchases->status != 'void') {
+                            $actions .= "<form action='" . route('purchase.void', $purchases->id) . "' class='void_purchase_form' method='POST' style='display: inline-block;'>
+                                            <input type='hidden' name='_token' value='" . csrf_token() . "'>
+                                            <input type='hidden' name='_method' value='PUT'>
+                                            <button type='submit' class='btn btn-danger'><i class='fas fa-fw fa-times'></i> Void</button>
+                                        </form>";
+
+                            return $actions;
+                        }
+                        return '';
+                    }
+                    return '';
+                })
+                ->rawColumns(['details', 'status', 'action'])
+                ->make(true);
+        }
     }
 }

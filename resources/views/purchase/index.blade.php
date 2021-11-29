@@ -5,7 +5,7 @@
 <div class="row">
     <div class="col-12">
         @if (session('message'))
-            <div class="alert alert-success alert-dismissible">
+            <div class="alert alert-{{ (session('type')) ? session('type') : 'success' }} alert-dismissible">
                 <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
                 <i class="icon fas fa-check"></i>{{ session('message') }}
             </div>
@@ -33,49 +33,6 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse ($purchases as $purchase)
-                            <tr>
-                                <td>{{ $purchase->updated_at }}</td>
-                                <td>{{ $purchase->purchase_number }}</td>
-                                <td>
-                                    @foreach ($purchase->items as $item)
-                                        {{ $item->quantity }} x {{ $item->name }} @if ($item->show->cost_price) at @money($item->show->cost_price) @endif
-                                        
-                                        @if ($item->serial_number) 
-                                            <br>
-                                            {{ $item->serial_number }} 
-                                        @endif
-
-                                        <br><br>
-                                    @endforeach
-                                </td>
-                                <td>
-                                    @if ($purchase->status == 'void')
-                                        <span class="badge badge-danger">{{ $purchase->status}}</span>
-                                    @else
-                                        <span class="badge badge-success">{{ $purchase->status}}</span>
-                                    @endif
-                                </td>
-                                <td>{{ $purchase->supplier->name }}</td>
-                                <td>{{ $purchase->user->name }}</td>
-                                <td>
-                                    @can('delete purchases')
-                                        @if ($purchase->status != 'void' && ! $purchase->with_item_sold)
-                                            <form action="{{ route('purchase.void', $purchase->id) }}" class="void_purchase_form" method="POST" style="display: inline-block;">
-                                                @csrf
-                                                @method("PUT")
-                                                <button type="submit" class="btn btn-danger"><i class="fas fa-fw fa-times"></i> Void</button>
-                                            </form>
-                                        @endif
-                                        {{-- <a href="{{ route('purchase.delete', $purchase->id) }}" class="btn btn-danger">Void</a> --}}
-                                    @endcan
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="7">No purchases yet</td>
-                            </tr>
-                        @endforelse
                     </tbody>
                 </table>
             </div>
@@ -87,7 +44,7 @@
 @section('js')
     <script>
     $(document).ready(function() {
-        $('.void_purchase_form').on('submit', function () {
+        $(document).on('submit', '.void_purchase_form', function () {
             if (confirm('Are you sure to void?')) {
                 $(this).find(":submit").attr('disabled', true);
             }
@@ -97,7 +54,19 @@
         });
 
         $('#purchases_list').DataTable({
-            "order": []
+            "order": [],
+            "processing": true,
+            "serverSide": true,
+            "ajax":  "{{ route('purchase.getAllPurchases') }}",
+            "columns": [
+                {data: 'created_at', name: 'purchases.created_at'},
+                {data: 'purchase_number', name: 'purchases.purchase_number'},
+                {data: 'details', name: 'purchases.details'},
+                {data: 'status', name: 'purchases.status'},
+                {data: 'supplier.name', name: 'supplier.name'},
+                {data: 'user.name', name: 'user.name'},
+                {data: 'action', name: 'user.name'}
+            ]
         });
     }); 
     </script>

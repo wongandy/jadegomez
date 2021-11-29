@@ -55,18 +55,7 @@
                                     <tr>
                                         <td>{{ $sale->created_at }}</td>
                                         <td>{{ $sale->sale_number }}</td>
-                                        <td>
-                                            @foreach ($sale->items as $item)
-                                                {{ $item->quantity }} x {{ $item->name }} @if ($item->sold_price) at @money($item->sold_price) @endif
-                                                
-                                                @if ($item->serial_number) 
-                                                    <br>
-                                                    {{ $item->serial_number }} 
-                                                @endif
-
-                                                <br><br>
-                                            @endforeach
-                                        </td>
+                                        <td>{!! $sale->details !!}</td>
                                         <td>
                                             @if ($sale->status == 'void')
                                                 <span class="badge badge-danger">{{ $sale->status}}</span>

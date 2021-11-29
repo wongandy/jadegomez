@@ -19,7 +19,7 @@ class Sale extends Model
     protected static $logName = 'Sale';
     protected function serializeDate(DateTimeInterface $date)
     {
-        return $date->format('Y-m-d h:i:sA');
+        return $date->format('Y-m-d h:i:s A');
     }
 
     public function getDescriptionForEvent(string $eventName): string
