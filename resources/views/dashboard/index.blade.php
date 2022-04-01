@@ -52,7 +52,7 @@
                         <div class="inner">
                             <h3>{{ $total_users }}</h3>
             
-                            <p>Total Users</p>
+                            <p>Total User</p>
                         </div>
                         <div class="icon">
                             <i class="fas fa-users"></i>
