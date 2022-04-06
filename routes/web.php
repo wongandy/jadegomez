@@ -61,6 +61,8 @@ Route::middleware(['auth'])->group(function () {
     Route::post('transfer/store', [TransferController::class, 'store'])->name('transfer.store');
     Route::post('transfer/{transfer}/updateStatus', [TransferController::class, 'updateStatus'])->name('transfer.updatestatus');
     Route::put('transfer/{transfer}/void', [TransferController::class, 'void'])->name('transfer.void');
+    Route::get('transfer/getAllTransfers', [TransferController::class, 'getAllTransfers'])->name('transfer.getAllTransfers');
+
 
     Route::get('report', [ReportController::class, 'index'])->name('report.index');
     Route::get('report/create', [ReportController::class, 'create'])->name('report.create');

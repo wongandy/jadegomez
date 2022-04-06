@@ -7,13 +7,18 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use DateTimeInterface;
 
 class Transfer extends Model
 {
     use HasFactory, LogsActivity;
 
-    protected $fillable = ['sending_branch_id', 'user_id', 'receiving_branch_id', 'number', 'transfer_number', 'notes', 'status'];
+    protected $fillable = ['sending_branch_id', 'user_id', 'receiving_branch_id', 'number', 'details', 'transfer_number', 'notes', 'status'];
     protected static $logName = 'Transfer';
+    protected function serializeDate(DateTimeInterface $date)
+    {
+        return $date->format('Y-m-d h:i:s A');
+    }
 
     public function getDescriptionForEvent(string $eventName): string
     {
