@@ -9,19 +9,14 @@ use App\Models\BranchItem;
 use App\Models\ItemPurchase;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Yajra\Datatables\Datatables;
 
 class TransferController extends Controller
 {
     public function index()
     {
         $this->authorize('view transfers');
-        DB::statement('SET SESSION group_concat_max_len = 1000000');
-        // $purchases = Purchase::with('items', 'supplier', 'user')->where('branch_id', auth()->user()->branch_id)->orderBy('id')->get();
-        // return view('purchase.index', compact('purchases'));
-        $transfers = Transfer::with('items', 'user', 'receivingBranch')->where('sending_branch_id', auth()->user()->branch_id)->orWhere('receiving_branch_id', auth()->user()->branch_id)->orderByDesc('id')->get();
-        // dd($transfers);
-        // dd($transfers->first()->items);
-        return view('transfer.index', compact('transfers'));
+        return view('transfer.index');
     }
 
     public function create()
@@ -74,13 +69,18 @@ class TransferController extends Controller
 
         $transfers = [];
         $f = 0;
+        $details = '';
 
         foreach ($request->items as $item) {
+            $details .= $item['quantity'] . ' x ' . $item['name'] . '<br>';
+
             if ($item['with_serial_number']) {
                 $itemPurchases = ItemPurchase::where('item_id', $item['item_id'])->where('branch_id', $request->user()->branch_id)->whereIn('serial_number', $item['serial_number'])->where('status', 'available')->get();
+                $details .= '(' . $itemPurchases->implode('serial_number', ', ') . ')' . '<br><br>';
             }
             else {
                 $itemPurchases = ItemPurchase::where('item_id', $item['item_id'])->where('branch_id', $request->user()->branch_id)->where('status', 'available')->limit($item['quantity'])->get();
+                $details .= '<br>';
             }
             
             foreach ($itemPurchases as $itemPurchase) {
@@ -108,6 +108,7 @@ class TransferController extends Controller
             'receiving_branch_id' => $request->to_branch_id,
             'number' => $number,
             'transfer_number' => $transfer_number,
+            'details' => $details,
             'notes' => $request->notes
         ]);
 
@@ -180,28 +181,18 @@ class TransferController extends Controller
 
     public function void(Transfer $transfer)
     {
-        // dd($transfer);
-
         if ($transfer->status == 'received') {
             return redirect()->route('transfer.index')->with('message', 'Transfer ' . $transfer->purchase_number .' has already been received and cannot be voided anymore!');
         }
 
         $transfer = Transfer::where('id', $transfer->id)->first();
-        // foreach ($transfer->test2 as $item) {
-        //     echo $item->pivot->item_purchase_id . '<br>';
-        // }
         $itemPurchaseIds = $transfer->itemPurchaseId()->pluck('item_purchase_id');
         ItemPurchase::whereIn('id', $itemPurchaseIds)->update([
             'branch_id' => auth()->user()->branch_id, 
             'status' => 'available'
         ]);
-        // dd();
-        // dd($transfer->items->first->pivot->item_purchase_id);
-        // dd($transfer->test2);
+
         $transfer->update(['status' => 'void']);
-        // foreach ($purchase->items as $item) {
-        //     echo $item->quantity . ' ' . $item->name . '<br>';
-        // }
 
         foreach ($transfer->items as $item) {
             $branchItem = BranchItem::where(['branch_id' => $transfer->sending_branch_id, 'item_id' => $item->id])->first();
@@ -219,5 +210,78 @@ class TransferController extends Controller
         }
 
         return redirect()->route('transfer.index')->with('message', 'Transfer ' . $transfer->purchase_number .' has been voided!');
+    }
+
+    public function getAllTransfers(Request $request) {
+        if ($request->ajax()) {
+            $transfers = Transfer::with('user')
+                ->select('transfers.*')
+                ->where(function ($query) {
+                    $query->where('sending_branch_id', auth()->user()->branch_id)
+                        ->orWhere('receiving_branch_id', auth()->user()->branch_id);
+                })
+                ->orderByDesc('id');
+
+            return Datatables::of($transfers)
+                ->addIndexColumn()
+                ->editColumn('details', function($transfers) {
+                    return $transfers->details;
+                })
+                ->addColumn('information', function($transfers) {
+                    if ($transfers->sending_branch_id == auth()->user()->branch_id) {
+                        return "<span style='color: red;'>Sent to " . $transfers->receivingBranch->address . " </span>";
+                    }
+                    else {
+                        return "<span style='color: green;'>Received from " . $transfers->sendingBranch->address . "</span>";
+                    }
+                })
+                ->editColumn('received_by', function($transfers) {
+                    if ($transfers->receivedByUser) {
+                        return $transfers->receivedByUser->name;
+                    }
+                    return '';
+                })
+                ->editColumn('status', function($transfers) {
+                    if ($transfers->status == 'void') {
+                        return "<span class='badge badge-danger'>$transfers->status</span>";
+                    }
+                    elseif ($transfers->status == 'pending') {
+                        return "<span class='badge badge-warning'>$transfers->status</span>";
+                    }
+                    else {
+                        return "<span class='badge badge-success'>$transfers->status</span>";
+                    }
+                })
+                ->addColumn('action', function($transfers){
+                    $actions = '';
+                    
+                    if (auth()->user()->can('approve transfers')) {
+                        if ($transfers->status != 'received' && $transfers->status != 'void' && $transfers->receiving_branch_id == auth()->user()->branch_id) {
+                            $actions .= "<form action='" . route('transfer.updatestatus', $transfers) . "' class='receive_transfer_form' method='POST'>
+                                            <input type='hidden' name='_token' value='" . csrf_token() . "'>
+                                            <button type='submit' class='btn btn-info'>Receive</button>
+                                        </form>";
+                        }
+                    }
+
+                    if (auth()->user()->can('delete transfers')) {
+                        if ($transfers->status != 'received' && $transfers->status != 'void' && $transfers->sending_branch_id == auth()->user()->branch_id) {
+                            $actions .= "<form action='" . route('transfer.void', $transfers->id) . "' class='void_transfer_form' method='POST' style='display: inline-block;'>
+                                            <input type='hidden' name='_token' value='" . csrf_token() . "'>
+                                            <input type='hidden' name='_method' value='PUT'>
+                                            <button type='submit' class='btn btn-danger'><i class='fas fa-fw fa-times'></i> Void</button>
+                                        </form>";
+                        }
+                    }
+
+                    if ($transfers->sending_branch_id == auth()->user()->branch_id && $transfers->status != 'void') {
+                        $actions .= "<a target='_blank' href='" . route('transfer.print', $transfers->id) . "' class='btn btn-info' style='display: inline-block;'><i class='fas fa-fw fa-print'></i> Print DR</a>";
+                    }
+
+                    return $actions;
+                })
+                ->rawColumns(['details', 'information', 'status', 'action'])
+                ->make(true);
+        }
     }
 }
