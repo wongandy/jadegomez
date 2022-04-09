@@ -70,18 +70,17 @@ class ItemController extends Controller
     {
         if ($request->ajax()) {
             $items = DB::table('items')
-                    ->leftJoin('item_purchase',
-                        'item_purchase.item_id', '=', DB::raw('items.id AND branch_id = ' . auth()->user()->branch_id . ' AND status = "available"'))
+                    // ->leftJoin('item_purchase',
+                    //     'item_purchase.item_id', '=', DB::raw('items.id AND branch_id = ' . auth()->user()->branch_id . ' AND status = "available"'))
                     ->select(
                         'items.id',
                         'items.name',
                         'items.upc',
                         'items.dynamic_cost_price',
                         'items.selling_price',
-                        DB::raw('COUNT(item_purchase.item_id) AS on_hand')
+                        // DB::raw('COUNT(item_purchase.item_id) AS on_hand')
                     )
-                    ->groupBy('items.id')
-                    ->orderBy('items.id', 'ASC')
+                    // ->groupBy('items.id')
                     ->get();
 
             return Datatables::of($items)
