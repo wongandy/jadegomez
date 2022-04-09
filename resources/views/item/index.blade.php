@@ -26,40 +26,11 @@
                             <th>UPC</th>
                             <th>Cost Price</th>
                             <th>Selling Price</th>
-                            {{-- <th>With Serial Number</th> --}}
-                            @canany(['edit items', 'delete items'])
-                                <th>Action</th>
-                            @endcanany
+                            <th></th>
                         </tr>
                     </thead>
 
                     <tbody>
-                        @forelse ($items as $item)
-                            <tr>
-                                <td>{{ $item->name }}</td>
-                                <td>{{ $item->on_hand }}</td>
-                                <td>{{ $item->upc }}</td>
-                                <td>{{ $item->dynamic_cost_price }}</td>
-                                <td>{{ $item->selling_price }}</td>
-                                {{-- <td>{{ $item->with_serial_number ? 'Yes' : 'No' }}</td> --}}
-                                @can('edit items')
-                                    <td>
-                                        <a href="{{ route('item.edit', $item->id) }}" class="btn btn-info">Edit</a>
-                                        {{-- @can('delete items') --}}
-                                        {{-- <form action="{{ route('item.destroy', $item->id) }}" method="POST" style="display: inline-block;">
-                                            @csrf
-                                            @method("DELETE")
-                                            <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure to delete?')">Delete</button>
-                                        </form> --}}
-                                        {{-- @endcan --}}
-                                    </td>
-                                @endcan
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="4">No item yet</td>
-                            </tr>
-                        @endforelse
                     </tbody>
                 </table>
             </div>
@@ -72,7 +43,18 @@
     <script>
     $(document).ready(function() {
         $('#items_list').DataTable({
-            "order": []
+            "order": [0, 'asc'],
+            "processing": true,
+            "serverSide": true,
+            "ajax":  "{{ route('item.getAllItems') }}",
+            "columns": [
+                {data: 'name'},
+                {data: 'on_hand'},
+                {data: 'upc'},
+                {data: 'dynamic_cost_price'},
+                {data: 'selling_price'},
+                {data: 'action'}
+            ]
         });
     }); 
     </script>

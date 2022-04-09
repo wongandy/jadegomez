@@ -274,7 +274,6 @@ class SaleController extends Controller
                             $actions .= "<a href='" . route('sale.review', $sales->id) . "' class='btn btn-info' style='margin-bottom: 2px;'><i class='fas fa-fw fa-binoculars'></i> Review</a>";
                         }
                     }
-
                     
                     if (auth()->user()->can('print unlimited sale DR')) {
                         if ($sales->status == 'paid' || $sales->status == 'unpaid') {
