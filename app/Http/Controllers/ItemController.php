@@ -70,7 +70,7 @@ class ItemController extends Controller
     {
         if ($request->ajax()) {
             $items = DB::table('items')
-                    ->leftJoin('item_purchase',
+                    ->join('item_purchase',
                         'item_purchase.item_id', '=', DB::raw('items.id AND branch_id = ' . auth()->user()->branch_id . ' AND status = "available"'))
                     ->select(
                         'items.id',
