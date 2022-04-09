@@ -69,7 +69,6 @@ class ReportController extends Controller
 
                 $reports[$date] = $sales;
             }
-
             return view('report.cashiersummary', compact('reports', 'from', 'to'));
         }
         elseif ($request->report_type == 2) { // sales details report

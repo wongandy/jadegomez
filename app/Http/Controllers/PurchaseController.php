@@ -170,8 +170,7 @@ class PurchaseController extends Controller
         if ($request->ajax()) {
             $purchases = Purchase::with('supplier', 'user')
                 ->select('purchases.*')
-                ->where('branch_id', auth()->user()->branch_id)
-                ->orderByDesc('id');
+                ->where('purchases.branch_id', auth()->user()->branch_id);
 
             return Datatables::of($purchases)
                 ->addIndexColumn()
@@ -191,7 +190,7 @@ class PurchaseController extends Controller
                     
                     if (auth()->user()->can('delete purchases')) {
                         if ($purchases->status != 'void') {
-                            $actions .= "<form action='" . route('purchase.void', $purchases->id) . "' class='void_purchase_form' method='POST' style='display: inline-block;'>
+                            $actions .= "<form action='" . route('purchase.void', $purchases->id) . "' class='void_purchase_form' method='POST' style='display: inline-block; margin-bottom: 2px;'>
                                             <input type='hidden' name='_token' value='" . csrf_token() . "'>
                                             <input type='hidden' name='_method' value='PUT'>
                                             <button type='submit' class='btn btn-danger'><i class='fas fa-fw fa-times'></i> Void</button>

@@ -214,28 +214,33 @@ class TransferController extends Controller
 
     public function getAllTransfers(Request $request) {
         if ($request->ajax()) {
-            $transfers = Transfer::with('user')
+            $transfers = Transfer::with('user', 'receivedByUser', 'sendingBranch', 'receivingBranch')
                 ->select('transfers.*')
                 ->where(function ($query) {
                     $query->where('sending_branch_id', auth()->user()->branch_id)
                         ->orWhere('receiving_branch_id', auth()->user()->branch_id);
-                })
-                ->orderByDesc('id');
+                });
 
             return Datatables::of($transfers)
                 ->addIndexColumn()
                 ->editColumn('details', function($transfers) {
                     return $transfers->details;
                 })
+                // ->filterColumn('information', function($query, $keyword) {
+                //     $query->where('status', 'like', "%{$keyword}%")
+                //         ->orWhere('transfer_number', 'like', "%{$keyword}%");
+                // })
                 ->addColumn('information', function($transfers) {
                     if ($transfers->sending_branch_id == auth()->user()->branch_id) {
+                        // return $transfers->transfer_number . ' - ' . $transfers->status;
                         return "<span style='color: red;'>Sent to " . $transfers->receivingBranch->address . " </span>";
                     }
                     else {
+                        // return $transfers->status . ' - ' . $transfers->transfer_number;
                         return "<span style='color: green;'>Received from " . $transfers->sendingBranch->address . "</span>";
                     }
                 })
-                ->editColumn('received_by', function($transfers) {
+                ->editColumn('receivedByUser', function($transfers) {
                     if ($transfers->receivedByUser) {
                         return $transfers->receivedByUser->name;
                     }
@@ -257,7 +262,7 @@ class TransferController extends Controller
                     
                     if (auth()->user()->can('approve transfers')) {
                         if ($transfers->status != 'received' && $transfers->status != 'void' && $transfers->receiving_branch_id == auth()->user()->branch_id) {
-                            $actions .= "<form action='" . route('transfer.updatestatus', $transfers) . "' class='receive_transfer_form' method='POST'>
+                            $actions .= "<form action='" . route('transfer.updatestatus', $transfers) . "' class='receive_transfer_form' method='POST' style='margin-bottom: 2px;'>
                                             <input type='hidden' name='_token' value='" . csrf_token() . "'>
                                             <button type='submit' class='btn btn-info'>Receive</button>
                                         </form>";
@@ -266,7 +271,7 @@ class TransferController extends Controller
 
                     if (auth()->user()->can('delete transfers')) {
                         if ($transfers->status != 'received' && $transfers->status != 'void' && $transfers->sending_branch_id == auth()->user()->branch_id) {
-                            $actions .= "<form action='" . route('transfer.void', $transfers->id) . "' class='void_transfer_form' method='POST' style='display: inline-block;'>
+                            $actions .= "<form action='" . route('transfer.void', $transfers->id) . "' class='void_transfer_form' method='POST' style='display: inline-block; margin-bottom: 2px;'>
                                             <input type='hidden' name='_token' value='" . csrf_token() . "'>
                                             <input type='hidden' name='_method' value='PUT'>
                                             <button type='submit' class='btn btn-danger'><i class='fas fa-fw fa-times'></i> Void</button>
@@ -275,7 +280,7 @@ class TransferController extends Controller
                     }
 
                     if ($transfers->sending_branch_id == auth()->user()->branch_id && $transfers->status != 'void') {
-                        $actions .= "<a target='_blank' href='" . route('transfer.print', $transfers->id) . "' class='btn btn-info' style='display: inline-block;'><i class='fas fa-fw fa-print'></i> Print DR</a>";
+                        $actions .= "<a target='_blank' href='" . route('transfer.print', $transfers->id) . "' class='btn btn-info' style='display: inline-block; margin-bottom: 2px;'><i class='fas fa-fw fa-print'></i> Print DR</a>";
                     }
 
                     return $actions;

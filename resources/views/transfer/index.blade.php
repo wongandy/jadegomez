@@ -68,6 +68,7 @@
 
         $('#transfers_list').DataTable({
             "order": [],
+            "order": [0, 'desc'],
             "processing": true,
             "serverSide": true,
             "ajax":  "{{ route('transfer.getAllTransfers') }}",
@@ -78,7 +79,7 @@
                 {data: 'details'},
                 {data: 'status'},
                 {data: 'notes'},
-                {data: 'received_by'},
+                {data: 'receivedByUser', name: 'receivedByUser.name'},
                 {data: 'user.name'},
                 {data: 'action'}
             ]
