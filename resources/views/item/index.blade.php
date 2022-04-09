@@ -22,7 +22,7 @@
                     <thead>
                         <tr>
                             <th>Name</th>
-                            <th>On Hand</th>
+                            <!-- <th>On Hand</th> -->
                             <th>UPC</th>
                             <th>Cost Price</th>
                             <th>Selling Price</th>
@@ -49,7 +49,7 @@
             "ajax":  "{{ route('item.getAllItems') }}",
             "columns": [
                 {data: 'name'},
-                {data: 'on_hand'},
+                // {data: 'on_hand'},
                 {data: 'upc'},
                 {data: 'dynamic_cost_price'},
                 {data: 'selling_price'},
