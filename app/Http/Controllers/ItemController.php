@@ -6,35 +6,20 @@ use App\Models\Item;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
+use Yajra\Datatables\Datatables;
+
 
 class ItemController extends Controller
 {
     public function index()
     {
         $this->authorize('view items');
-        $items = DB::table('items')
-                    ->leftJoin('item_purchase',
-                        'item_purchase.item_id', '=', DB::raw('items.id AND branch_id = ' . auth()->user()->branch_id . ' AND status = "available"'))
-                    ->select(
-                        'items.id',
-                        'items.name',
-                        'items.upc',
-                        'items.dynamic_cost_price',
-                        // 'items.with_serial_number',
-                        'items.selling_price',
-                        DB::raw('COUNT(item_purchase.item_id) AS on_hand')
-                    )
-                    ->groupBy('items.id')
-                    ->orderBy('items.id', 'ASC')
-                    ->get();
-
-        return view('item.index', compact('items'));
+        return view('item.index');
     }
 
     public function create()
     {
         $this->authorize('create items');
-
         return view('item.create');
     }
 
@@ -54,7 +39,6 @@ class ItemController extends Controller
     public function edit(Item $item)
     {
         $this->authorize('edit items');
-
         return view('item.edit', compact('item'));
     }
 
@@ -78,8 +62,40 @@ class ItemController extends Controller
     public function destroy(Item $item)
     {
         $this->authorize('delete items');
-
         $item->delete();
         return redirect()->back()->with('message', 'Deleted item!');
+    }
+
+    public function getAllItems(Request $request)
+    {
+        if ($request->ajax()) {
+            $items = DB::table('items')
+                    ->leftJoin('item_purchase',
+                        'item_purchase.item_id', '=', DB::raw('items.id AND branch_id = ' . auth()->user()->branch_id . ' AND status = "available"'))
+                    ->select(
+                        'items.id',
+                        'items.name',
+                        'items.upc',
+                        'items.dynamic_cost_price',
+                        'items.selling_price',
+                        DB::raw('COUNT(item_purchase.item_id) AS on_hand')
+                    )
+                    ->groupBy('items.id')
+                    ->orderBy('items.id', 'ASC')
+                    ->get();
+
+            return Datatables::of($items)
+                ->addIndexColumn()
+                ->addColumn('action', function($items){
+                    $actions = '';
+                    
+                    if (auth()->user()->can('edit items')) {
+                        $actions .= "<a href='" . route('item.edit', $items->id) . "' class='btn btn-info' style='margin-bottom: 2px;'><i class='fas fa-fw fa-binoculars'></i> Edit</a>";
+                    }
+                    return $actions;
+                })
+                ->rawColumns(['action'])
+                ->make(true);
+        }
     }
 }

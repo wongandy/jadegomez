@@ -30,6 +30,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
    
     Route::get('/', [DashboardController::class, 'index']);
+    Route::get('item/getAllItems', [ItemController::class, 'getAllItems'])->name('item.getAllItems');
     Route::resource('item', ItemController::class);
     Route::resource('branch', BranchController::class);
     Route::resource('role', RoleController::class);
