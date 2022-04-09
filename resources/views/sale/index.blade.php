@@ -38,17 +38,17 @@
                 <div class="tab-content" id="custom-tabs-one-tabContent">
                     <div class="tab-pane fade show active" id="today_sales" role="tabpanel" aria-labelledby="today_sales">
                         <table id="today_sales_list" class="table table-bordered table-striped">
-                            <thead>
-                                <tr>
-                                    <th>Date</th>
-                                    <th>Sale Number</th>
-                                    <th>Item</th>
-                                    <th>Status</th>
-                                    <th>Customer</th>
-                                    <th>Approved By</th>
-                                    <th>Created By</th>
-                                    <th></th>
-                                </tr>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Sale Number</th>
+                                <th>Item</th>
+                                <th>Status</th>
+                                <th>Customer</th>
+                                <th>Approved By</th>
+                                <th>Created By</th>
+                                <th></th>
+                            </tr>
                             </thead>
                             <tbody>
                                 @forelse ($today_sales as $sale)
@@ -77,7 +77,7 @@
                                                 {{-- @if ($purchase->status != 'void' && (! $purchase->items()->where('status', '!=', 'available')->count())) --}}
                                                 {{-- @if ($sale->status != 'void' && $sale->status != 'paid' && $sale->status != 'unpaid') --}}
                                                 @if ($sale->status != 'void')
-                                                    <form action="{{ route('sale.void', $sale->id) }}" class="void_sale_form" method="POST" style="display: inline-block;">
+                                                    <form action="{{ route('sale.void', $sale->id) }}" class="void_sale_form" method="POST" style="display: inline-block; margin-bottom: 2px;">
                                                         @csrf
                                                         @method("PUT")
                                                         <button type="submit" class="btn btn-danger"><i class="fas fa-fw fa-times"></i> Void</button>
@@ -87,22 +87,18 @@
 
                                             @can('approve sales')
                                                 @if ($sale->status == 'for approval' || $sale->status == 'unpaid')
-                                                    <a href="{{ route('sale.review', $sale->id) }}" class="btn btn-info"><i class="fas fa-fw fa-binoculars"></i> Review</a>
+                                                    <a href="{{ route('sale.review', $sale->id) }}" class="btn btn-info" style="margin-bottom: 2px;"><i class="fas fa-fw fa-binoculars"></i> Review</a>
                                                 @endif
-
                                             @endcan
 
                                             @can('print unlimited sale DR')
                                                 @if ($sale->status == 'paid' || $sale->status == 'unpaid')
-                                                    <a href="{{ route('sale.print', $sale->id) }}" class="btn btn-info"><i class="fas fa-fw fa-print"></i> Print DR</a>
+                                                    <a href="{{ route('sale.print', $sale->id) }}" class="btn btn-info" style="margin-bottom: 2px;"><i class="fas fa-fw fa-print"></i> Print DR</a>
                                                 @endif
                                             @endcan
                                         </td>
                                     </tr>
                                 @empty
-                                    <tr>
-                                        <td colspan="8">No sales yet</td>
-                                    </tr>
                                 @endforelse
                             </tbody>
                         </table>
@@ -150,7 +146,7 @@
         });
 
         $('#all_sales_list').DataTable({
-            "order": [],
+            "order": [0, 'desc'],
             "processing": true,
             "serverSide": true,
             "ajax": "{{ route('sale.getAllSales') }}",
@@ -162,7 +158,7 @@
                 {data: 'customer.name', name: 'customer.name'},
                 {data: 'approvedByUser', name: 'approvedByUser.name'},
                 {data: 'user.name', name: 'user.name'},
-                {data: 'action', name: 'action'},
+                {data: 'action', name: 'action'}
             ]
         });
     }); 

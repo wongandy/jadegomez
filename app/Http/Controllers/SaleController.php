@@ -231,8 +231,7 @@ class SaleController extends Controller
         if ($request->ajax()) {
             $sales = Sale::with('items', 'customer', 'user', 'branch', 'approvedByUser')
             ->select('sales.*')
-            ->where('branch_id', auth()->user()->branch_id)
-            ->orderByDesc('id');
+            ->where('sales.branch_id', auth()->user()->branch_id);
 
             return Datatables::of($sales)
                 ->addIndexColumn()
@@ -262,7 +261,7 @@ class SaleController extends Controller
                     
                     if (auth()->user()->can('delete sales')) {
                         if ($sales->status != 'void') {
-                            $actions .= "<form action='" . route('sale.void', $sales->id) . "' class='void_sale_form' method='POST' style='display: inline-block;'>
+                            $actions .= "<form action='" . route('sale.void', $sales->id) . "' class='void_sale_form' method='POST' style='display: inline-block; margin-bottom: 2px;'>
                                             <input type='hidden' name='_token' value='" . csrf_token() . "'>
                                             <input type='hidden' name='_method' value='PUT'>
                                             <button type='submit' class='btn btn-danger'><i class='fas fa-fw fa-times'></i> Void</button>
@@ -272,14 +271,14 @@ class SaleController extends Controller
 
                     if (auth()->user()->can('approve sales')) {
                         if ($sales->status == 'for approval' || $sales->status == 'unpaid') {
-                            $actions .= "<a href='" . route('sale.review', $sales->id) . "' class='btn btn-info'><i class='fas fa-fw fa-binoculars'></i> Review</a>";
+                            $actions .= "<a href='" . route('sale.review', $sales->id) . "' class='btn btn-info' style='margin-bottom: 2px;'><i class='fas fa-fw fa-binoculars'></i> Review</a>";
                         }
                     }
 
                     
                     if (auth()->user()->can('print unlimited sale DR')) {
                         if ($sales->status == 'paid' || $sales->status == 'unpaid') {
-                            $actions .= "<a href='" . route('sale.print', $sales->id) . "' class='btn btn-info'><i class='fas fa-fw fa-print'></i> Print DR</a>";
+                            $actions .= "<a href='" . route('sale.print', $sales->id) . "' class='btn btn-info' style='margin-bottom: 2px;'><i class='fas fa-fw fa-print'></i> Print DR</a>";
                         }
                     }
                        

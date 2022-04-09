@@ -55,6 +55,7 @@
 
         $('#purchases_list').DataTable({
             "order": [],
+            "order": [0, 'desc'],
             "processing": true,
             "serverSide": true,
             "ajax":  "{{ route('purchase.getAllPurchases') }}",
