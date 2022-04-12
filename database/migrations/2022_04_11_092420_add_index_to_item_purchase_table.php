@@ -14,7 +14,7 @@ class AddIndexToItemPurchaseTable extends Migration
     public function up()
     {
         Schema::table('item_purchase', function (Blueprint $table) {
-            $table->index('item_purchase_item_id_index');
+            $table->index('item_id');
         });
     }
 
@@ -26,7 +26,7 @@ class AddIndexToItemPurchaseTable extends Migration
     public function down()
     {
         Schema::table('item_purchase', function (Blueprint $table) {
-            $table->dropIndex('item_id');
+            $table->dropIndex('item_purchase_item_id_index');
         });
     }
 }
