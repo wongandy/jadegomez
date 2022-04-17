@@ -18,20 +18,44 @@
                 <h3 class="card-title">Items</h3>
             </div>
             <div class="card-body table-responsive">
-                {!! $dataTable->table(['class' => 'table table-bordered table-striped']) !!}
+                <table id="items_list" class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>On Hand</th>
+                            <th>UPC</th>
+                            <th>Cost Price</th>
+                            <th>Selling Price</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
 </div>
 @stop
 
-@section('css')
-<link rel="stylesheet" href="https://cdn.datatables.net/buttons/1.0.3/css/buttons.dataTables.min.css">
-@stop
-
 @section('js')
-
-<script src="https://cdn.datatables.net/buttons/1.0.3/js/dataTables.buttons.min.js"></script>
-    <script src="/vendor/datatables/buttons.server-side.js"></script>
-    {!! $dataTable->scripts() !!}
+<script>
+    $(document).ready(function() {
+        $('#items_list').DataTable({
+            "order": [0, 'asc'],
+            "processing": true,
+            "serverSide": true,
+            "ajax":  "{{ route('item.getAllItems') }}",
+            "columns": [
+                {data: 'name'},
+                {data: 'on_hand'},
+                {data: 'upc'},
+                {data: 'dynamic_cost_price'},
+                {data: 'selling_price'},
+                {data: 'action'}
+            ]
+        });
+    }); 
+</script>
 @stop
