@@ -7,14 +7,14 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 use Yajra\Datatables\Datatables;
-
+use App\DataTables\ItemsDataTable;
 
 class ItemController extends Controller
 {
-    public function index()
+    public function index(ItemsDataTable $itemsDataTable)
     {
         $this->authorize('view items');
-        return view('item.index');
+        return $itemsDataTable->render('item.index');
     }
 
     public function create()

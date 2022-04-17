@@ -21,7 +21,7 @@
                             <div class="inner">
                                 <h3>{{ $total_items }}</h3>
             
-                                <p>Total It</p>
+                                <p>Total Items</p>
                             </div>
                             <div class="icon">
                                 {{-- <i class="ion ion-bag"></i> --}}
