@@ -83,14 +83,21 @@ class PurchaseController extends Controller
 
         $number = Purchase::where('branch_id', auth()->user()->branch_id)->max('number') + 1;
 
-        Purchase::create([
+        $createdPurchase = Purchase::create([
             'supplier_id' => $request->supplier_id,
             'branch_id' => $request->user()->branch_id,
             'number' => $number,
             'user_id' => $request->user()->id,
             'purchase_number' => $request->purchase_number,
             'details' => $details
-        ])->items()->attach($purchase);
+        ]);
+
+        // chunk purchases into multiple arrays so as not to reach prepared statement error limit
+        $batch_purchases = array_chunk($purchase, 1000);
+
+        foreach ($batch_purchases as $batch_purchase) {
+            $createdPurchase->items()->attach($batch_purchase);
+        }
 
         // update the cost price of each items as it is dynamic
         foreach ($request->items as $items) {
