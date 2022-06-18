@@ -148,7 +148,7 @@ input[type=number]::-webkit-outer-spin-button {
                     selectSerialNumbers += "<option>" + value + "</option>";
                 });
                 
-                let name = "<input type='string' class='form-control-plaintext' name='items[" + rowNumber + "][name]' value='" + item.data('name') + "' tabindex='-1' readonly>";
+                let name = "<input type='string' class='form-control-plaintext name' name='items[" + rowNumber + "][name]' value='" + item.data('name') + "' tabindex='-1' readonly>";
                 let upc = "<input type='string' class='form-control-plaintext' value='" + item.data('upc') + "' tabindex='-1' readonly>";;
                 let onHand = "<input type='number' class='form-control-plaintext on_hand' name='items[" + rowNumber + "][on_hand]' value='" + item.data('on-hand') + "' tabindex='-1' readonly>";
                 let id = "<input type='hidden' class='item_id' name='items[" + rowNumber + "][item_id]' value='" + item.data('id') + "'>";
@@ -200,6 +200,7 @@ input[type=number]::-webkit-outer-spin-button {
                 $(this).attr('id', i);
                 $(this).find('.serial_number').attr('name', 'items[' + i + '][serial_number][]');
                 $(this).find('.quantity').attr('name', 'items[' + i + '][quantity]');
+                $(this).find('.name').attr('name', 'items[' + i + '][name]');
                 $(this).find('.on_hand').attr('name', 'items[' + i + '][on_hand]');
                 $(this).find('.with_serial_number').attr('name', 'items[' + i + '][with_serial_number]');
                 $(this).find('.item_id').attr('name', 'items[' + i + '][item_id]');
@@ -213,15 +214,6 @@ input[type=number]::-webkit-outer-spin-button {
             else {
                 $('#transfers_table').attr('hidden', true);
                 $('#create_transfer_button').attr('disabled', true);
-            }
-        });
-
-        $("#create_transfer_form").on('submit', function(){
-            if (confirm('Are you sure to create transfer?')) {
-                $('#create_transfer_button').attr('disabled', true);
-            }
-            else {
-                return false;
             }
         });
 
@@ -256,10 +248,34 @@ input[type=number]::-webkit-outer-spin-button {
             // $('#net_total').val(netTotal);
         });
 
-        // $(document).on('keyup', '#discount', function() {
-        //     let netTotal = $('#gross_total').val() - $('#discount').val();
-        //     $('#net_total').val(netTotal);
-        // });
+        $(document).on('submit', '#create_transfer_form', function (e) {
+            e.preventDefault();
+            
+            if (confirm('Are you sure to create transfer?')) {
+                $('#create_transfer_button').attr('disabled', true);
+
+                $.ajax({
+                    type: "POST",
+                    url: "{{ route('transfer.store') }}",
+                    headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')},
+                    data: $(this).serialize(),
+                    success: function () {
+                        location.href = "{{ route('transfer.index') }}";
+                    },
+                    error: function(xhr, status, error) {
+                        $('#errors').html('');
+                        $('#errors').html("<p class='text-danger'>Errors found:</p>");
+                        $.each(xhr.responseJSON.errors, function (key, item) {
+                            $("#errors").append("<li class='text-danger'>"+item+"</li>");
+                            $('#create_transfer_button').attr('disabled', false);
+                        });
+                    }
+                });
+            }
+            else {
+                return false;
+            }
+        });
     });
     </script>
 @stop
