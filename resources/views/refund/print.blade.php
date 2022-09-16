@@ -21,13 +21,15 @@
 <div class="wrapper font-weight-bold">
   <div class="row">
     <div class="col">
-      <b>Customer:</b> {{ $sale->customer->name }}<br>
-      <b>Contact Number:</b> {{ $sale->customer->contact_number }}
+      <b>Customer:</b> {{ $refund->sale->customer->name }}<br>
+      <b>Contact Number:</b> {{ $refund->sale->customer->contact_number }}
     </div>
     <div class="col text-right">
-        <b>Date:</b> {{ date('Y-m-d h:i:s a', strtotime($sale->created_at)) }}<br>
-        <b>Delivery Receipt No:</b> {{ $sale->sale_number }}<br>
-        <b>Cashier:</b> {{ $sale->user->name }}<br>
+        <b>Date:</b> {{ date('Y-m-d h:i:s a', strtotime($refund->created_at)) }}<br>
+        <b>Referenced DR No:</b> {{ $refund->sale->sale_number }}<br>
+        <b>CDR No:</b> {{ $refund->refund_number }}<br>
+        <b>CDR Type:</b> Return Item<br>
+        <b>Cashier:</b> {{ $refund->user->name }}<br>
     </div>
   </div>
   <br>
@@ -35,12 +37,13 @@
   <div class="row">
     <div class="col text-center">
       <h3>{{ auth()->user()->branch->name }}</h3>
-      <small>{{ $sale->branch->address }}</small><br>
-      <small>Contact Number {{ $sale->branch->contact_number }}</small>    
+      <small>{{ $refund->branch->address }}</small><br>
+      <small>Contact Number {{ $refund->branch->contact_number }}</small>    
     </div>
   </div>
   <br>
 
+  <b>Returned the following item/s:</b><br><br>
   <div class="row">
     <div class="col-12">
       <table class="table table-sm table-striped table-bordered">
@@ -54,7 +57,7 @@
         </thead>
 
         <tbody>
-          @foreach ($sale->items as $item)
+          @foreach ($refund->items as $item)
             <tr>
               <td>{{ $item->name }}</td>
               <td>{{ $item->quantity }}</td>
@@ -63,18 +66,8 @@
             </tr>
           @endforeach
             <tr>
-              <th colspan='3' class="text-center">Gross Total</th>
-              <td><strong>{{ $sale->gross_total }}</strong></td>
-            </tr>
-
-            <tr>
-              <th colspan='3' class="text-center">Discount</th>
-              <td><strong>{{ $sale->discount }}</strong></td>
-            </tr>
-
-            <tr>
-              <th colspan='3' class="text-center">Net Total</th>
-              <td><strong>{{ $sale->net_total }}</strong></td>
+              <th colspan='3' class="text-center">Refund Total</th>
+              <td><strong>{{ $refund->refund_total }}</strong></td>
             </tr>
         </tbody>
       </table>
@@ -84,13 +77,13 @@
   <div class="row">
     <div class="col">
       <p>
-        <small>This document is not valid for claiming input tax. For WARRANTY purposes only.</small><br>
+        <small>This document is not valid for claiming input tax.</small><br>
         <small>Printed on <?php echo date('Y-m-d h:i:sa'); ?></small>
       </p>
       
-      @if ($sale->items->contains('with_serial_number', 1))
+      @if ($refund->items->contains('with_serial_number', 1))
         <div>
-          @foreach ($sale->items as $item)
+          @foreach ($refund->items as $item)
             @if ($item->serial_number)
               <small><b>{{ $item->name }}</b></small><br>
               <small style="text-transform:uppercase">{{ $item->serial_number }}</small>
@@ -110,7 +103,7 @@
   });
 
   function closePrintView() {
-    window.location.href = "{{ route('sale.index') }}";
+    window.location.href = "{{ route('return.index') }}";
   }
 </script>
 </body>

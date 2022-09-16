@@ -40,13 +40,6 @@
                                         @can('edit roles')
                                             <a href="{{ route('role.edit', $role->id) }}" class="btn btn-info">Edit</a>
                                         @endcan
-                                        {{-- @can('delete roles')
-                                            <form action="{{ route('role.destroy', $role->id) }}" method="POST" style="display: inline-block;">
-                                                @csrf
-                                                @method("DELETE")
-                                                <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure to delete?')">Delete</button>
-                                            </form>
-                                        @endcan --}}
                                     @endif
                                 </td>
                             </tr>

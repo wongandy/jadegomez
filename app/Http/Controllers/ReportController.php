@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Sale;
 use App\Models\User;
 use App\Models\Branch;
+use App\Models\Refund;
 use App\Models\Transfer;
 use Carbon\CarbonPeriod;
 use Illuminate\Http\Request;
@@ -14,28 +15,6 @@ use App\Http\Requests\ReportFormRequest;
 
 class ReportController extends Controller
 {
-    public function index()
-    {
-        // dd(auth()->user());
-        // $test = collect(['a', 'b']);
-        // dd($test);
-        // foreach ($test as $t) {
-        //     echo $t;
-        // }   
-        // dd();
-        $from = '2021-02-25';
-        $to = '2021-02-25';
-        $dates = [];
-        $period = CarbonPeriod::create($from, $to);
-
-        foreach ($period as $date) {
-            array_push($dates, $date->format('Y-m-d'));
-        }
-
-        $sales = Sale::whereIn('end_of_day_at', $dates)->where('branch_id', auth()->user()->branch_id)->get();
-        dd($sales);
-    }
-
     public function create()
     {
         $this->authorize('generate reports');
@@ -49,7 +28,6 @@ class ReportController extends Controller
         $to = $request->to;
         $dates = [];
         $period = CarbonPeriod::create($from, $to);
-
         foreach ($period as $date) {
             array_push($dates, $date->format('Y-m-d'));
         }
@@ -59,16 +37,45 @@ class ReportController extends Controller
             $reports = [];
 
             foreach ($dates as $date) {
-                $sales = DB::table('sales')
-                    ->join('users', 'sales.approved_by', 'users.id')
+                $sales = Sale::join('users', 'sales.approved_by', 'users.id')
                     ->join('customers', 'sales.customer_id', 'customers.id')
                     ->where('sales.branch_id', auth()->user()->branch_id)
                     ->where('end_of_day_at', 'LIKE', $date . '%')
-                    ->select('sales.sale_number', 'sales.created_at', 'sales.status', 'sales.net_total', 'users.name AS user_name', 'customers.name AS customer_name')
-                    ->get()->groupBy('user_name');
+                    ->select(
+                        'sales.sale_number',
+                        'sales.created_at',
+                        'sales.status',
+                        'sales.net_total',
+                        'users.name AS user_name',
+                        'customers.name AS customer_name'
+                    )->get()->groupBy('user_name');
 
-                $reports[$date] = $sales;
+                $refunds = Refund::query()
+                    ->join('users', 'refunds.user_id', 'users.id')
+                    ->join('sales', 'refunds.sale_id', 'sales.id')
+                    ->join('customers', 'sales.customer_id', 'customers.id')
+                    ->where('refunds.branch_id', auth()->user()->branch_id)
+                    ->where('refunds.created_at', 'LIKE', $date . '%')
+                    ->select(
+                        DB::raw("CONCAT(refunds.refund_number, ' (', sales.sale_number, ')') AS sale_number"),
+                        'refunds.created_at',
+                        'refunds.status',
+                        'refunds.refund_total_for_reports AS net_total',
+                        'users.name AS user_name',
+                        'customers.name AS customer_name'
+                    )->get()->groupBy('user_name');
+
+                $results = collect();
+
+                $sales->each(function ($item, $name) use ($refunds, $results) {
+                    $push = $refunds->has($name) ? $item->mergeRecursive($refunds->get($name)) : $item;
+                    $results[$name] = $push;
+                });
+
+                $merged = $results->union($refunds);
+                $reports[$date] = $merged;
             }
+            
             return view('report.cashiersummary', compact('reports', 'from', 'to'));
         }
         elseif ($request->report_type == 2) { // sales details report

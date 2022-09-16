@@ -384,6 +384,11 @@ return [
             'can' => ['create transfers', 'view transfers']
         ],
         [
+            'text'        => 'Returned Items',
+            'icon'        => 'nav-icon fas fa-fw fa-arrow-down',
+            'route'       => 'return.index'
+        ],
+        [
             'text'        => 'Generate Reports',
             'icon'        => 'nav-icon fas fa-fw fa-file-alt',
             'route' => 'report.create',

@@ -31,7 +31,7 @@ class Sale extends Model
     {
         return $this->belongsToMany(Item::class)->select(
             [DB::raw("COUNT(*) as quantity"), 
-            DB::raw("CONCAT('(', GROUP_CONCAT(serial_number SEPARATOR ', '), ')') AS serial_number"), 
+            DB::raw("CONCAT('(', GROUP_CONCAT(serial_number SEPARATOR ', '), ')') AS serial_number"),
             'items.name', 
             'items.upc',
             'items.id',
@@ -44,6 +44,25 @@ class Sale extends Model
         ->groupBy('item_sale.item_id', 'item_sale.sale_id');
     }
 
+    public function item()
+    {
+        return $this->belongsToMany(Item::class)
+            ->withPivot('branch_id', 'item_purchase_id')
+                ->select(
+                [
+                    DB::raw("COUNT(*) as quantity"),
+                    'items.name', 
+                    'items.upc',
+                    'items.id',
+                    'items.with_serial_number',
+                    'items.selling_price', 
+                    'item_sale.sold_price'
+                ]
+            )
+            ->join('item_purchase', 'item_sale.item_purchase_id', '=', 'item_purchase.id')
+            ->orderBy('item_sale.id', 'ASC')
+            ->groupBy('item_sale.item_id', 'item_sale.sale_id');
+    }
     public function itemPurchaseId()
     {
         return $this->belongsToMany(Item::class)->withPivot('item_purchase_id');
@@ -81,5 +100,17 @@ class Sale extends Model
     public function endOfDayBy()
     {
         return $this->belongsTo(User::class, 'end_of_day_by');
+    }
+
+    public function refunds()
+    {
+        return $this->hasMany(Refund::class);
+    }
+
+    public function allSoldItems()
+    {
+        return $this->belongsToMany(Item::class)
+                    ->select('item_sale.item_id', 'item_purchase.id AS item_purchase_id', 'serial_number')
+                    ->join('item_purchase', 'item_sale.item_purchase_id', '=', 'item_purchase.id');
     }
 }
