@@ -65,6 +65,7 @@ input[type=number]::-webkit-outer-spin-button {
                                 <tr data-sale-item-id="{{ $i->id }}">
                                     <td>
                                         {{ $i->name }}
+                                    </td>
                                     <td>
                                        {{ $i->upc }}
                                     </td>
@@ -120,6 +121,10 @@ input[type=number]::-webkit-outer-spin-button {
                     </table>
                     <br>
                 </div>
+            </div>
+
+            <div class="card-footer">
+                <button id="proceed-button" class="btn btn-success" disabled>Click to proceed below</button>
             </div>
         </div>
 
@@ -205,7 +210,7 @@ input[type=number]::-webkit-outer-spin-button {
                     $('#amount-' + item.data('item-id')).html(amount);
                 }
                 else {
-                    $('#returned_items_table_wrapper').attr('hidden', false);
+                    $('#proceed-button').attr('disabled', false);
                     $('#returned_items_table tbody').append('<tr id=' + item.data('item-id') + '><td>' 
                                                             + itemId + saleId + name + withSerialNumber 
                                                       + '</td><td>' 
@@ -234,7 +239,7 @@ input[type=number]::-webkit-outer-spin-button {
                     return false;
                 }
                 
-                $('#returned_items_table_wrapper').attr('hidden', false);
+                $('#proceed-button').attr('disabled', false);
                 $('#create_refund_button').attr('disabled', false);
                 let rowNumber = $('#returned_items_table tbody tr').length;
                 $("input[name='return_quantity']",this).attr('disabled', true);
@@ -266,6 +271,19 @@ input[type=number]::-webkit-outer-spin-button {
                 for (let i = 0; i < itemPurchaseIds.length; i++) {
                     $('#serial-number-' + $("input[name='item_id']",this).val()).append("<option value='" + itemPurchaseIds[i] + "' selected>" + itemPurchaseIds[i] + "</option>");
                 }
+            });
+
+            $(document).on('click', '#proceed-button', function () {
+                var returned_items_table = $('#returned_items_table_wrapper');
+                returned_items_table.attr('hidden', false);
+
+                $("#sales_table").find("input,button,textarea,select").attr("disabled", "disabled");
+
+                $('html,body').animate({
+                    scrollTop: returned_items_table.offset().top},
+                    'slow');
+
+                $(this).attr('disabled', true);
             });
 
             $(document).on('submit', '#create_refund_form', function (e) {
