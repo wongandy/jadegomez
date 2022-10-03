@@ -8,6 +8,7 @@ use App\Models\Branch;
 use App\Models\Refund;
 use App\Models\Transfer;
 use Carbon\CarbonPeriod;
+use App\Models\Defective;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -18,6 +19,7 @@ class ReportController extends Controller
     public function create()
     {
         $this->authorize('generate reports');
+
         return view('report.create');
     }
 
@@ -37,43 +39,94 @@ class ReportController extends Controller
             $reports = [];
 
             foreach ($dates as $date) {
-                $sales = Sale::join('users', 'sales.approved_by', 'users.id')
-                    ->join('customers', 'sales.customer_id', 'customers.id')
-                    ->where('sales.branch_id', auth()->user()->branch_id)
-                    ->where('end_of_day_at', 'LIKE', $date . '%')
-                    ->select(
-                        'sales.sale_number',
-                        'sales.created_at',
-                        'sales.status',
-                        'sales.net_total',
-                        'users.name AS user_name',
-                        'customers.name AS customer_name'
-                    )->get()->groupBy('user_name');
+                $sales = Sale::with('user')
+                            ->join('users', 'sales.approved_by', '=', 'users.id')
+                            ->join('customers', 'sales.customer_id', 'customers.id')
+                            ->where('sales.branch_id', auth()->user()->branch_id)
+                            ->where('end_of_day_at', 'LIKE', $date . '%')
+                            ->select(
+                                'sales.sale_number',
+                                'sales.user_id',
+                                'sales.created_at',
+                                'sales.status',
+                                'sales.net_total',
+                                'sales.approved_by',
+                                'users.name AS user_name',
+                                'customers.name AS customer_name'
+                            )->get()->groupBy('user_name');
 
-                $refunds = Refund::query()
-                    ->join('users', 'refunds.user_id', 'users.id')
-                    ->join('sales', 'refunds.sale_id', 'sales.id')
-                    ->join('customers', 'sales.customer_id', 'customers.id')
-                    ->where('refunds.branch_id', auth()->user()->branch_id)
-                    ->where('refunds.created_at', 'LIKE', $date . '%')
-                    ->select(
-                        DB::raw("CONCAT(refunds.refund_number, ' (', sales.sale_number, ')') AS sale_number"),
-                        'refunds.created_at',
-                        'refunds.status',
-                        'refunds.refund_total_for_reports AS net_total',
-                        'users.name AS user_name',
-                        'customers.name AS customer_name'
-                    )->get()->groupBy('user_name');
+                $refunds = Refund::with('user')
+                            ->join('users', 'refunds.user_id', 'users.id')
+                            ->join('sales', 'refunds.sale_id', 'sales.id')
+                            ->join('customers', 'sales.customer_id', 'customers.id')
+                            ->where('refunds.branch_id', auth()->user()->branch_id)
+                            ->where('refunds.created_at', 'LIKE', $date . '%')
+                            ->select(
+                                DB::raw("CONCAT(refunds.refund_number, ' (', sales.sale_number, ')') AS sale_number"),
+                                'refunds.created_at',
+                                'refunds.status',
+                                'refunds.refund_total_for_reports AS net_total',
+                                'refunds.user_id',
+                                'users.name AS user_name',
+                                'customers.name AS customer_name'
+                            )->get()->groupBy('user_name');
+
+                $defectives = Defective::with('user')
+                                ->join('users', 'defectives.user_id', 'users.id')
+                                ->join('sales', 'defectives.sale_id', 'sales.id')
+                                ->join('customers', 'sales.customer_id', 'customers.id')
+                                ->where('defectives.branch_id', auth()->user()->branch_id)
+                                ->where('defectives.created_at', 'LIKE', $date . '%')
+                                ->select(
+                                    DB::raw("CONCAT(defectives.defective_number, ' (', sales.sale_number, ')') AS sale_number"),
+                                    'defectives.created_at',
+                                    'defectives.user_id',
+                                    'defectives.status',
+                                    'defectives.defective_total AS net_total',
+                                    'users.name AS user_name',
+                                    'customers.name AS customer_name'
+                                )->get()->groupBy('user_name');
+
+                $cashiers = $sales->keys()->merge($refunds->keys())->merge($defectives->keys())->unique();
 
                 $results = collect();
 
-                $sales->each(function ($item, $name) use ($refunds, $results) {
-                    $push = $refunds->has($name) ? $item->mergeRecursive($refunds->get($name)) : $item;
-                    $results[$name] = $push;
-                });
+                foreach ($cashiers as $cashier) {
+                    if ($sales->has($cashier)) {
+                        if ($results->has($cashier)) {
+                            foreach ($sales->get($cashier) as $sale) {
+                                $results[$cashier][] = $sale;
+                            }
+                        }
+                        else {
+                            $results[$cashier] = $sales->get($cashier);
+                        }
+                    }
 
-                $merged = $results->union($refunds);
-                $reports[$date] = $merged;
+                    if ($refunds->has($cashier)) {
+                        if ($results->has($cashier)) {
+                            foreach ($refunds->get($cashier) as $refund) {
+                                $results[$cashier][] = $refund;
+                            }
+                        }
+                        else {
+                            $results[$cashier] = $refunds->get($cashier);
+                        }
+                    }
+
+                    if ($defectives->has($cashier)) {
+                        if ($results->has($cashier)) {
+                            foreach ($defectives->get($cashier) as $defective) {
+                                $results[$cashier][] = $defective;
+                            }
+                        }
+                        else {
+                            $results[$cashier] = $defectives->get($cashier);
+                        }
+                    }
+                }
+
+                $reports[$date] = $results;
             }
             
             return view('report.cashiersummary', compact('reports', 'from', 'to'));

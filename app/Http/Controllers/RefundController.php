@@ -30,13 +30,22 @@ class RefundController extends Controller
                 $q->where('sale_id', '=', $sale->id);
             },
             'item.remainingSoldItems' => function ($q) use ($sale) {
-                $q->where('sale_id', '=', $sale->id)->whereNotIn('item_purchase_id', function ($q) use ($sale) {
-                    $q->select('item_purchase_id')
-                        ->from('item_refund')
-                        ->where('item_refund.sale_id', '=', $sale->id)
-                        ->join('refunds', 'refunds.id', '=', 'item_refund.refund_id')
-                        ->where('refunds.status', '!=', 'void');
-                });
+                $q->where('sale_id', '=', $sale->id)
+                    ->whereNotIn('item_purchase_id', function ($q) use ($sale) {
+                        $q->select('item_purchase_id')
+                            ->from('item_refund')
+                            ->where('item_refund.sale_id', '=', $sale->id)
+                            ->join('refunds', 'refunds.id', '=', 'item_refund.refund_id')
+                            ->where('refunds.status', '!=', 'void');
+                    })
+                    ->whereNotIn('item_purchase_id', function ($q) use ($sale) {
+                        $q->select('item_purchase_id')
+                            ->from('item_defective')
+                            ->where('item_defective.sale_id', '=', $sale->id)
+                            ->join('defectives', 'defectives.id', '=', 'item_defective.defective_id')
+                            ->where('defectives.status', '!=', 'void');
+                    }
+                );
             }
         ])->whereId($sale->id)->first();
 
@@ -79,7 +88,7 @@ class RefundController extends Controller
             'sale_id' => $request->sale_id,
             'number' => $number,
             'refund_number' => $refund_number,
-            'status' => 'return item',
+            'status' => 'paid',
             'refund_total' => $request->refund_total,
             'refund_total_for_reports' => 0 - $request->refund_total,
         ])->refunded()->attach($refund);
@@ -171,7 +180,7 @@ class RefundController extends Controller
         if ($refund->status == 'void') {
             abort(403);
         }
-        
+
         return view('refund.print', compact('refund'));
     }
 }

@@ -18,10 +18,19 @@ input[type=number]::-webkit-outer-spin-button {
     <div class="col-12">
         <div class="card">
             <div class="card-header">
-                <h3 class="card-title">Create Item Return</h3>
+                <h3 class="card-title">Create Item Defective</h3>
             </div>
 
             <div class="card-body">
+            @if ($errors->any())
+                <div class="alert alert-danger">
+                    <ul>
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
                 <div class="form-group row">
                     <label for="sale_number" class="col-sm-2 col-form-label">Sale Number</label>
 
@@ -79,8 +88,8 @@ input[type=number]::-webkit-outer-spin-button {
                                 <th class="w-25">Serial Number</th>
                                 <th>Qty</th>
                                 <th>Sold Price</th>
-                                <th>Serial Number To Return</th>
-                                <th>Qty To Return</th>
+                                <th>Serial Number To Replace</th>
+                                <th>Qty To Replace</th>
                             </tr>
                         </thead>
                     
@@ -99,11 +108,9 @@ input[type=number]::-webkit-outer-spin-button {
                                         @endif
                                     </td>
                                     <td>
-                                        <!-- <input type="number" class="form-control-plaintext quantity-sold-{{ $i->id }}" value="{{ $i->quantity }}" readonly> -->
                                         {{ $i->quantity }}
                                     </td>
                                     <td>
-                                        <!-- <input type="text" class="form-control-plaintext" value="{{ number_format($i->sold_price, 2, '.', ',') }}" readonly></td> -->
                                         {{ number_format($i->sold_price, 2, '.', ',') }}
                                     <td>
                                         @if ($i->with_serial_number)
@@ -123,7 +130,7 @@ input[type=number]::-webkit-outer-spin-button {
                                     </td>
                                     <td>
                                         @if (! $i->with_serial_number)
-                                            <form class="form" novalidate>
+                                            <form class="item-without-serial-numbers" novalidate>
                                                 <input type="hidden" name="name" value="{{ $i->name }}">
                                                 <input type="hidden" name="upc" value="{{ $i->upc }}">
                                                 <input type="hidden" name="item_id" value="{{ $i->id }}">
@@ -131,8 +138,7 @@ input[type=number]::-webkit-outer-spin-button {
                                                 <input type="hidden" name="item_purchase_ids" value="{{ $i->remainingSoldItems->implode('item_purchase_id', ', ') }}">
                                                 <input type="hidden" name="sold_quantity" value="{{ $i->quantity }}">
                                                 <input type="hidden" name="sold_price" value="{{ $i->sold_price }}">
-                                                
-                                                <input type="number" name="return_quantity" class="form-control" min="0" max="{{ $i->remainingSoldItems->count() }}" value="0" onKeyDown="if (event.key != 'ArrowUp' && event.key != 'ArrowDown' && event.key != 'Enter') return false;">
+                                                <input type="number" name="return_quantity" class="form-control quantity-to-replace" min="0" max="{{ $i->remainingSoldItems->count() }}" value="0" onKeyDown="if (event.key != 'ArrowUp' && event.key != 'ArrowDown' && event.key != 'Enter') return false;">
                                                 <input type="submit" name="selected_quantity" hidden>
                                             </form>
                                         @else
@@ -154,10 +160,10 @@ input[type=number]::-webkit-outer-spin-button {
 
         <div class="card" id="returned_items_table_wrapper" hidden>
             <div class="card-header">
-                <h3 class="card-title">Return Items</h3>
+                <h3 class="card-title">Defective Items</h3>
             </div>
 
-            <form class="form-horizontal" id="create_refund_form" action="{{ route('return.store') }}" method="POST">
+            <form class="form-horizontal" id="create-defective-form" action="{{ route('defective.store') }}" method="POST">
                 @csrf
 
                 <div class="card-body">
@@ -169,47 +175,61 @@ input[type=number]::-webkit-outer-spin-button {
                                     <th>UPC</th>
                                     <th>Serial Number</th>
                                     <th>Qty</th>
-                                    <th>Sold Price</th>
-                                    <th>Amount</th>
                                 </tr>
                             </thead>
                             <tbody>
                             </tbody>
                         </table>
+                        <br>
+                    </div>
 
-                        <div class="col-md-4 col-xs-12 float-right" id="calculation">
-                            <div class="form-group row">
-                                <label for="refund_total" class="col-sm-4 col-form-label">Refund Total</label>
-                                
-                                <div class="col-sm-8">
-                                    <input type="number" class="form-control" id="refund_total" name="refund_total" tabindex='-1' readonly autocomplete="off">
-                                    <input type="hidden" class="form-control" id="sale_id" name="sale_id" value="{{ $sale->id }}" tabindex='-1'>
-                                </div>
-                            </div>
-                        </div>
+                    <div>
+                        <hr>
+                        <h5>Replace Item</h5>
+                        <table id="replace_items_table" class="table table-bordered table-sm table-hover">
+                            <thead>
+                                <tr>
+                                    <th class="w-25">Item</th>
+                                    <th>UPC</th>
+                                    <th>Serial Number</th>
+                                    <th>Qty</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
                         <br>
                     </div>
                 </div>
 
                 <div class="card-footer">
-                    <button type="submit" id="create_refund_button" class="btn btn-success" disabled>Return Item</button>
+                    <button type="submit" id="create_replacement_button" class="btn btn-success" disabled>Replace Item</button>
                 </div>
+
+                <input type="hidden" class="form-control" id="sale_id" name="sale_id" value="{{ $sale->id }}" tabindex='-1'>
             </form>
         </div>
     </div>
 </div>
 @endsection
 @section('js')
+    <script type="text/javascript" src="{{ asset('vendor/jsvalidation/js/jsvalidation.js')}}"></script>
+
     <script>
         $(document).ready(function () {
-            let refundTotal = 0;
-            
+            let hasSerialNumbersYetToBeSelected = [];
+
             $('.select-serial-number').select2();
 
             $(document).on('select2:unselecting', '.select-serial-number', function (e) {
+                hasSerialNumbersYetToBeSelected.push(1);
+
+                if (hasSerialNumbersYetToBeSelected.length) {
+                    $('#create_replacement_button').attr('disabled', true);
+                }
+
                 // prevent dropdown from opening when clicking x to deselect
                 e.params.args.originalEvent.stopPropagation();
-                $('#create_refund_button').attr('disabled', false);
                 let rowNumber = $('#returned_items_table tbody tr').length;
                 let item = $(this).find(':selected');
                 let serialNumbersRemoved = $(this).find('option').length - ($(this).select2('data').length - 1);
@@ -224,8 +244,6 @@ input[type=number]::-webkit-outer-spin-button {
                 let amount = "<input type='text' class='form-control-plaintext' value='" + serialNumbersRemoved * item.data('sold-price') + "' readonly>";
                 let withSerialNumber = "<input type='hidden' class='with_serial_number' name='items[" + rowNumber + "][with_serial_number]' value='" + item.data('with-serial-number') + "'>";
                 let selectedSerialNumbers = "<select name='items[" + rowNumber + "][item_purchase_id][]' class='form-control serial-numbers' id='serial-number-" + item.data("item-id") + "' style='width: 100%; min-width: 200px;' multiple='multiple' disabled></select>";
-                refundTotal += parseFloat(item.data('sold-price'));
-                $('#refund_total').val(refundTotal);
 
                 // if item already exist in the returned items table
                 if ($('#' + item.data('item-id')).length) {
@@ -234,26 +252,94 @@ input[type=number]::-webkit-outer-spin-button {
                     $('#amount-' + item.data('item-id')).html(amount);
                 }
                 else {
-                    $('#proceed-button').attr('disabled', false);
-                    $('#returned_items_table tbody').append('<tr id=' + item.data('item-id') + '><td>' 
+                    $('#returned_items_table tbody').append('<tr data-item-id=' + item.data('item-id') + ' id=' + item.data('item-id') + '><td>' 
                                                             + itemId + saleId + name + withSerialNumber 
                                                       + '</td><td>' 
                                                             + upc
                                                       + '</td><td>' 
                                                             + selectedSerialNumbers                                                    
                                                       + '</td><td id="qty-' + item.data('item-id') + '">'
-                                                      + '</td><td>' 
-                                                            + soldPrice
-                                                      + '</td><td id="amount-' + item.data('item-id') + '">' 
                                                       + '</td></tr>');
                     
                     $('#serial-number-' + item.data('item-id')).select2().append("<option value='" + data.id + "' selected>" + data.text + "</option>");
                     $('#qty-' + item.data('item-id')).html(qty);
                     $('#amount-' + item.data('item-id')).html(amount);
                 }
+                
+                $.ajax({
+                    type: 'GET',
+                    url: '/getItemsWithSerialNumberForReplacement/' + item.data('item-id'),
+                    success: function (data) {
+                        let serialNumbers = '';
+                        
+                        if (! data || (data.remainingQuantity < serialNumbersRemoved)) {
+                            $('.select-serial-number').prop('disabled', true);
+                            $('.quantity-to-replace').prop('disabled', true);
+                            $('#proceed-button').attr('disabled', true);
+                            return alert('Not enough item on hand to replace the item with. Please add more and try again.');
+                        }
+                        else {
+                            $('#proceed-button').attr('disabled', false);
+
+                            if ($('#select2-' + data.id).length) {
+                                $('#select2-' + data.id).select2({
+                                    maximumSelectionLength: serialNumbersRemoved
+                                });
+
+                                $('#select2-' + data.id).attr('data-required-number-of-serial-numbers-to-select', serialNumbersRemoved);
+                            }
+                            else {
+                                $.each(JSON.parse(data.serial_numbers), function (key, value) {
+                                    serialNumbers += "<option value='" + key + "'>" + value + "</option>";
+                                });
+
+                                $('#replace_items_table tbody').append('<tr>' +
+                                                                            '<td>' + 
+                                                                                data.name + 
+                                                                            '</td>' +
+                                                                            '<td>' + 
+                                                                                data.upc + 
+                                                                            '</td>' +
+                                                                            '<td>' + 
+                                                                                '<select name="replacements[' + item.data('item-id') + '][item_purchase_id][]" id="select2-' + data.id + '" class="replacement-serial-numbers" data-required-number-of-serial-numbers-to-select="' + serialNumbersRemoved + '" multiple required>' + serialNumbers + '</select>' +
+                                                                                '<input type="hidden" name="replacements[' + item.data('item-id') + '][item_id]" value="' + item.data('item-id') + '">' +
+                                                                            '</td>' +
+                                                                            '<td class="return-quantity"></td>' +
+                                                                        '</tr>');
+
+                                $('#select2-' + data.id).select2({
+                                    maximumSelectionLength: serialNumbersRemoved
+                                });
+
+                                if (hasSerialNumbersYetToBeSelected.length) {
+                                    
+                                }
+                            }
+                        }
+                    }
+                });
             });
 
-            $(document).on('submit', '.form', function (e) {
+            $(document).on('select2:select', '.replacement-serial-numbers', function (e) {
+                hasSerialNumbersYetToBeSelected.pop(1);
+                $(this).closest("td").siblings(".return-quantity").text($(this).select2('data').length);
+
+                if (! hasSerialNumbersYetToBeSelected.length) {
+                    $('#create_replacement_button').attr('disabled', false);
+                }
+            });
+
+            $(document).on('select2:unselect', '.replacement-serial-numbers', function (e) {
+                hasSerialNumbersYetToBeSelected.push(1);
+                $(this).closest("td").siblings(".return-quantity").text($(this).select2('data').length);
+
+                if (hasSerialNumbersYetToBeSelected.length) {
+                    $('#create_replacement_button').attr('disabled', true);
+                }
+            });
+
+
+            $(document).on('submit', '.item-without-serial-numbers', function (e) {
                 e.preventDefault();
                 let returnQuantity = $("input[name='return_quantity']",this).val();
                 let qty = "<input type='string' class='form-control-plaintext' tabindex='-1' value='" + returnQuantity + "'readonly>";
@@ -264,37 +350,71 @@ input[type=number]::-webkit-outer-spin-button {
                 }
                 
                 $('#proceed-button').attr('disabled', false);
-                $('#create_refund_button').attr('disabled', false);
+                // $('#create_replacement_button').attr('disabled', false);
                 let rowNumber = $('#returned_items_table tbody tr').length;
                 $("input[name='return_quantity']",this).attr('disabled', true);
-                let itemPurchaseIds = $("input[name='item_purchase_ids']",this).val().split(', ').splice(0, returnQuantity);                
+                let itemPurchaseIds = $("input[name='item_purchase_ids']",this).val().split(', ').splice(0, returnQuantity);     
                 let selectedSerialNumbers = "<select name='items[" + rowNumber + "][item_purchase_id][]' class='form-control' id='serial-number-" + $("input[name='item_id']",this).val() + "' multiple hidden></select>";
-                let soldPrice = "<input type='number' class='form-control-plaintext' name='items[" + rowNumber + "][sold_price]' value='" + $("input[name='sold_price']",this).val() + "' tabindex='-1' readonly>";
                 let name = "<input type='string' class='form-control-plaintext' name='items[" + rowNumber + "][name]' value='" + $("input[name='name']",this).val() + "' tabindex='-1' readonly>";
                 let upc = "<input type='string' class='form-control-plaintext' name='items[" + rowNumber + "][upc]' value='" + $("input[name='upc']",this).val() + "' tabindex='-1' readonly>";
                 let itemId = "<input type='hidden' class='item_id' name='items[" + rowNumber + "][item_id]' value='" + $("input[name='item_id']",this).val() + "'>";
                 let saleId = "<input type='hidden' class='sale_id' name='items[" + rowNumber + "][sale_id]' value='" + $("input[name='sale_id']",this).val() + "'>";
-                let total = $("input[name='sold_price']",this).val() * returnQuantity;
-                let amount = "<input type='text' class='form-control-plaintext' value='" + total + "' tabindex='-1' readonly>";
-                refundTotal += parseFloat(total);
-                $('#refund_total').val(refundTotal);
 
-                $('#returned_items_table tbody').append('<tr id=' + itemId + '><td>' 
+                $('#returned_items_table tbody').append('<tr data-item-id="' + $("input[name='item_id']",this).val() + '" id=' + itemId + '><td>' 
                                                         + itemId + name + saleId + selectedSerialNumbers
                                                     + '</td><td>' 
                                                         + upc
                                                     + '</td><td>'
                                                     + '</td><td>'
                                                         + qty
-                                                    + '</td><td>'
-                                                        + soldPrice
-                                                    + '</td><td>'
-                                                        + amount
-                                                        + '</td></tr>');
+                                                    + '</td></tr>');
 
                 for (let i = 0; i < itemPurchaseIds.length; i++) {
                     $('#serial-number-' + $("input[name='item_id']",this).val()).append("<option value='" + itemPurchaseIds[i] + "' selected>" + itemPurchaseIds[i] + "</option>");
                 }
+
+                $.ajax({
+                    type: 'GET',
+                    url: '/getItemsWithOutSerialNumberForReplacement/' + $("input[name='item_id']",this).val() + '/' + returnQuantity,
+                    success: function (item) {
+                        let replacementsSelected = '';
+                        replacementsSelected += '<input type="hidden" name="replacements[' + item.id + '][item_id]" value="' + item.id + '">';
+
+                        $.each(item.purchases, function (key, item_purchase) {
+                            replacementsSelected += '<input type="hidden" name="replacements[' + item.id + '][item_purchase_id][]" value="' + item_purchase.id + '">';
+                        });
+
+                        if (! item.purchases.length) {
+                            $('.select-serial-number').prop('disabled', true);
+                            $('.quantity-to-replace').prop('disabled', true);
+                            $('#proceed-button').attr('disabled', true);
+                            return alert('Not enough item on hand to replace the item with. Please add more and try again.');
+                        }
+                        else {
+                            $('#proceed-button').attr('disabled', false);
+
+                            if (! hasSerialNumbersYetToBeSelected.length) {
+                                $('#create_replacement_button').attr('disabled', false);
+                            }
+
+                            $('#replace_items_table tbody').append('<tr>' +
+                                                                        '<td>' + 
+                                                                            item.name + 
+                                                                        '</td>' +
+                                                                        '<td>' + 
+                                                                            item.upc + 
+                                                                        '</td>' +
+                                                                        '<td>' + 
+                                                                        '</td>' +
+                                                                        '<td>' + 
+                                                                            returnQuantity +
+                                                                        '</td>' +
+                                                                    '</tr>');
+
+                            $('#create-defective-form').append(replacementsSelected);
+                        }
+                    }
+                });
             });
 
             $(document).on('click', '#proceed-button', function () {
@@ -310,8 +430,8 @@ input[type=number]::-webkit-outer-spin-button {
                 $(this).attr('disabled', true);
             });
 
-            $(document).on('submit', '#create_refund_form', function (e) {
-                if (confirm('Are you sure to create item return?')) {
+            $(document).on('submit', '#create-defective-form', function (e) {
+                if (confirm('Are you sure to create item replacement?')) {
                     $('.serial-numbers').attr('disabled', false);
                 }
                 else {

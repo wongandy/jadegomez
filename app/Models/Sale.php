@@ -22,6 +22,8 @@ class Sale extends Model
         return $date->format('Y-m-d h:i:s A');
     }
 
+    public $type = "Item sale";
+
     public function getDescriptionForEvent(string $eventName): string
     {
         return ":causer.name $eventName sale :subject.sale_number";
