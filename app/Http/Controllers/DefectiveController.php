@@ -88,7 +88,7 @@ class DefectiveController extends Controller
             'sale_id' => $request->sale_id,
             'number' => $number,
             'defective_number' => $defective_number,
-            'status' => 'defective item'
+            'status' => 'paid'
         ]);
         
         $itemPurchaseIds = collect($request->replacements)->pluck('item_purchase_id')->flatten();
