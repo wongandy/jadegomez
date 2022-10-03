@@ -384,9 +384,22 @@ return [
             'can' => ['create transfers', 'view transfers']
         ],
         [
-            'text'        => 'Returned Items',
-            'icon'        => 'nav-icon fas fa-fw fa-arrow-down',
-            'route'       => 'return.index'
+            'text'        => 'CDR',
+            'icon'        => 'nav-icon fas fa-fw fa-paste',
+            'submenu' => [
+                [
+                    'text'        => 'Item Return',
+                    'route'       => 'return.index'
+                ],
+                [
+                    'text'        => 'Item Defective',
+                    'route'       => 'defective.index'
+                ],
+                // [
+                //     'text'        => 'Changed Items',
+                //     'route'       => 'defective.index'
+                // ],
+            ],
         ],
         [
             'text'        => 'Generate Reports',

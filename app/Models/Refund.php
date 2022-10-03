@@ -2,11 +2,12 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\User;
+use DateTimeInterface;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\Traits\LogsActivity;
-use Illuminate\Support\Facades\DB;
-use DateTimeInterface;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Refund extends Model
 {
@@ -24,6 +25,8 @@ class Refund extends Model
     ];
 
     protected static $logName = 'Refund';
+
+    public $type = "Item refund";
 
     public function getStatusAttribute($value)
     {

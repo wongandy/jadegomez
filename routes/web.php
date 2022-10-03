@@ -7,15 +7,16 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SaleController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\BranchController;
+use App\Http\Controllers\RefundController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\PurchaseController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\TransferController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DefectiveController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\ItemPurchaseController;
-use App\Http\Controllers\RefundController;
 
 Auth::routes();
 
@@ -50,7 +51,7 @@ Route::middleware(['auth'])->group(function () {
     Route::put('sale/{sale}/void', [SaleController::class, 'void'])->name('sale.void');
     Route::get('customer/dataAjax', [CustomerController::class, 'dataAjax'])->name('customer.dataajax');
     Route::get('sale/getAllSales', [SaleController::class, 'getAllSales'])->name('sale.getAllSales');
-    Route::get('sale/getAllBranchesSales', [SaleController::class, 'getAllBranchesSales'])->name('sale.getAllBranchesSales');
+    Route::get('sale/getAllBranchesSales/{type}', [SaleController::class, 'getAllBranchesSales'])->name('sale.getAllBranchesSales');
 
     Route::get('transfer', [TransferController::class, 'index'])->name('transfer.index');
     Route::get('transfer/create', [TransferController::class, 'create'])->name('transfer.create');
@@ -75,4 +76,15 @@ Route::middleware(['auth'])->group(function () {
     Route::get('return/getAllReturns', [RefundController::class, 'getAllReturns'])->name('return.getAllReturns');
     Route::put('return/{refund}/void', [RefundController::class, 'void'])->name('return.void');
     Route::get('return/{refund}/print', [RefundController::class, 'print'])->name('return.print');
+
+    Route::get('defective', [DefectiveController::class, 'index'])->name('defective.index');
+    Route::get('defective/{sale}/create', [DefectiveController::class, 'create'])->name('defective.create');
+    Route::post('defective/store', [DefectiveController::class, 'store'])->name('defective.store');
+    Route::put('defective/{defective}/void', [DefectiveController::class, 'void'])->name('defective.void');
+    Route::get('defective/{defective}/print', [DefectiveController::class, 'print'])->name('defective.print');
+    Route::get('defective/getAllDefectives', [DefectiveController::class, 'getAllDefectives'])->name('defective.getAllDefectives');
+    Route::get('getItemsWithSerialNumberForReplacement/{item_id}', [DefectiveController::class, 'getItemsWithSerialNumberForReplacement']);
+    Route::get('getItemsWithOutSerialNumberForReplacement/{item_id}/{qty}', [DefectiveController::class, 'getItemsWithOutSerialNumberForReplacement']);
+    Route::get('test', [DefectiveController::class, 'test']);
+
 });

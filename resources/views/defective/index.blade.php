@@ -15,7 +15,7 @@
             <div class="card-header p-0 pt-1">
                 <ul class="nav nav-tabs" role="tablist">
                     <li class="nav-item">
-                        <a class="nav-link active" data-toggle="pill" href="#returned_items" role="tab">Returned Items</a>
+                        <a class="nav-link active" data-toggle="pill" href="#returned_items" role="tab">Defective Items</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" data-toggle="pill" href="#all_branches_sales" role="tab">All Branches Sales</a>
@@ -25,7 +25,7 @@
             <div class="card-body table-responsive">
                 <div class="tab-content">
                     <div class="tab-pane fade show active" id="returned_items" role="tabpanel">
-                        <table id="item_returns_list" class="table table-bordered table-striped" style="width: 100%">
+                        <table id="item_defectives_list" class="table table-bordered table-striped" style="width: 100%">
                             <thead>
                                 <tr>
                                     <th>Sale Date</th>
@@ -37,7 +37,8 @@
                                     <th>RMA Status</th>
                                     <th>RMA Date</th>
                                     <th>RMA Number</th>
-                                    <th>Returned Item</th>
+                                    <th>Defective Item</th>
+                                    <th>Replaced Item</th>
                                     <th>RMA By</th>
                                     <th></th>
                                 </tr>
@@ -75,7 +76,7 @@
 @section('js')
     <script>
     $(document).ready(function() {
-        $(document).on('submit', '.void_refund_form', function () {
+        $(document).on('submit', '.void_defective_form', function () {
             if (confirm('Are you sure to void?')) {
                 $(this).find(":submit").attr('disabled', true);
             }
@@ -84,11 +85,11 @@
             }
         });
 
-        $('#item_returns_list').DataTable({
+        $('#item_defectives_list').DataTable({
             "order": [7, 'desc'],
             "processing": true,
             "serverSide": true,
-            "ajax": "{{ route('return.getAllReturns') }}",
+            "ajax": "{{ route('defective.getAllDefectives') }}",
             columns: [
                 {data: 'sale.created_at'},
                 {data: 'sale.sale_number'},
@@ -98,8 +99,9 @@
                 {data: 'sale.branch.address'},
                 {data: 'status'},
                 {data: 'created_at'},
-                {data: 'refund_number'},
-                {data: 'detail', searchable: false},
+                {data: 'defective_number'},
+                {data: 'defectiveItems', searchable: false},
+                {data: 'replacedItems', searchable: false},
                 {data: 'user.name'},
                 {data: 'action', sortable: false},
             ]
@@ -109,7 +111,7 @@
             "order": [0, 'desc'],
             "processing": true,
             "serverSide": true,
-            "ajax": "{{ route('sale.getAllBranchesSales', 'refunds') }}",
+            "ajax": "{{ route('sale.getAllBranchesSales', 'defectives') }}",
             columns: [
                 {data: 'created_at', name: 'sales.created_at'},
                 {data: 'sale_number', name: 'sales.sale_number'},

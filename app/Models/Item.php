@@ -40,6 +40,11 @@ class Item extends Model
         return $this->belongsToMany(Refund::class);
     }
 
+    public function defectives()
+    {
+        return $this->belongsToMany(Defective::class);
+    }
+
     public function allSoldItems()
     {
         return $this->belongsToMany(Sale::class)
