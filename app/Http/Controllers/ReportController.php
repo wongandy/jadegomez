@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Sale;
 use App\Models\User;
 use App\Models\Branch;
+use App\Models\Change;
 use App\Models\Refund;
 use App\Models\Transfer;
 use Carbon\CarbonPeriod;
@@ -87,7 +88,23 @@ class ReportController extends Controller
                                     'customers.name AS customer_name'
                                 )->get()->groupBy('user_name');
 
-                $cashiers = $sales->keys()->merge($refunds->keys())->merge($defectives->keys())->unique();
+                $changes = Change::with('user')
+                                ->join('users', 'changes.user_id', 'users.id')
+                                ->join('sales', 'changes.sale_id', 'sales.id')
+                                ->join('customers', 'sales.customer_id', 'customers.id')
+                                ->where('changes.branch_id', auth()->user()->branch_id)
+                                ->where('changes.created_at', 'LIKE', $date . '%')
+                                ->select(
+                                    DB::raw("CONCAT(changes.change_number, ' (', sales.sale_number, ')') AS sale_number"),
+                                    'changes.created_at',
+                                    'changes.user_id',
+                                    'changes.status',
+                                    'changes.change_total AS net_total',
+                                    'users.name AS user_name',
+                                    'customers.name AS customer_name'
+                                )->get()->groupBy('user_name');
+
+                $cashiers = $sales->keys()->merge($refunds->keys())->merge($defectives->keys())->merge($changes->keys())->unique();
 
                 $results = collect();
 
@@ -122,6 +139,17 @@ class ReportController extends Controller
                         }
                         else {
                             $results[$cashier] = $defectives->get($cashier);
+                        }
+                    }
+
+                    if ($changes->has($cashier)) {
+                        if ($results->has($cashier)) {
+                            foreach ($changes->get($cashier) as $change) {
+                                $results[$cashier][] = $change;
+                            }
+                        }
+                        else {
+                            $results[$cashier] = $changes->get($cashier);
                         }
                     }
                 }

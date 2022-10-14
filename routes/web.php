@@ -16,6 +16,7 @@ use App\Http\Controllers\TransferController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DefectiveController;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\ChangeController;
 use App\Http\Controllers\ItemPurchaseController;
 
 Auth::routes();
@@ -85,6 +86,12 @@ Route::middleware(['auth'])->group(function () {
     Route::get('defective/getAllDefectives', [DefectiveController::class, 'getAllDefectives'])->name('defective.getAllDefectives');
     Route::get('getItemsWithSerialNumberForReplacement/{item_id}', [DefectiveController::class, 'getItemsWithSerialNumberForReplacement']);
     Route::get('getItemsWithOutSerialNumberForReplacement/{item_id}/{qty}', [DefectiveController::class, 'getItemsWithOutSerialNumberForReplacement']);
-    Route::get('test', [DefectiveController::class, 'test']);
 
+    Route::get('change',[ChangeController::class, 'index'])->name('change.index');
+    Route::get('change/{sale}/create', [ChangeController::class, 'create'])->name('change.create');
+    Route::post('change/store', [ChangeController::class, 'store'])->name('change.store');
+    Route::put('change/{change}/void', [ChangeController::class, 'void'])->name('change.void');
+    Route::get('change/{change}/print', [ChangeController::class, 'print'])->name('change.print');
+    Route::get('change/getAllChanges', [ChangeController::class, 'getAllChanges'])->name('change.getAllChanges');
+    Route::get('getItemsWithOutSerialNumberForReplacement/{item_id}/{qty}', [ChangeController::class, 'getItemsWithOutSerialNumberForReplacement']);
 });

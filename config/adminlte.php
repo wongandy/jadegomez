@@ -395,10 +395,10 @@ return [
                     'text'        => 'Item Defective',
                     'route'       => 'defective.index'
                 ],
-                // [
-                //     'text'        => 'Changed Items',
-                //     'route'       => 'defective.index'
-                // ],
+                [
+                    'text'        => 'Item Change',
+                    'route'       => 'change.index'
+                ],
             ],
         ],
         [

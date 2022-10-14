@@ -21,15 +21,15 @@
 <div class="wrapper font-weight-bold">
   <div class="row">
     <div class="col">
-      <b>Customer:</b> {{ $defective->sale->customer->name }}<br>
-      <b>Contact Number:</b> {{ $defective->sale->customer->contact_number }}
+      <b>Customer:</b> {{ $change->sale->customer->name }}<br>
+      <b>Contact Number:</b> {{ $change->sale->customer->contact_number }}
     </div>
     <div class="col text-right">
-        <b>Date:</b> {{ date('Y-m-d h:i:s a', strtotime($defective->created_at)) }}<br>
-        <b>Referenced DR No:</b> {{ $defective->sale->sale_number }}<br>
-        <b>CDR No:</b> {{ $defective->defective_number }}<br>
-        <b>CDR Type:</b> Defective Item<br>
-        <b>Cashier:</b> {{ $defective->user->name }}<br>
+        <b>Date:</b> {{ date('Y-m-d h:i:s a', strtotime($change->created_at)) }}<br>
+        <b>Referenced DR No:</b> {{ $change->sale->sale_number }}<br>
+        <b>CDR No:</b> {{ $change->change_number }}<br>
+        <b>CDR Type:</b> Change Item<br>
+        <b>Cashier:</b> {{ $change->user->name }}<br>
     </div>
   </div>
   <br>
@@ -37,13 +37,13 @@
   <div class="row">
     <div class="col text-center">
       <h3>{{ auth()->user()->branch->name }}</h3>
-      <small>{{ $defective->branch->address }}</small><br>
-      <small>Contact Number {{ $defective->branch->contact_number }}</small>    
+      <small>{{ $change->branch->address }}</small><br>
+      <small>Contact Number {{ $change->branch->contact_number }}</small>    
     </div>
   </div>
   <br>
 
-  <b>Returned the following item/s as defective:</b><br><br>
+  <b>Returned the following item/s:</b><br><br>
   <div class="row">
     <div class="col-12">
       <table class="table table-sm table-striped table-bordered">
@@ -55,7 +55,7 @@
         </thead>
 
         <tbody>
-          @foreach ($defective->items as $item)
+          @foreach ($change->itemChange as $item)
             <tr>
               <td>{{ $item->name }}</td>
               <td>{{ $item->quantity }}</td>
@@ -67,7 +67,7 @@
   </div>
 
   <hr>
-  <b>Replaced with the following item/s:</b><br><br>
+  <b>Changed to the following item/s:</b><br><br>
   <div class="row">
     <div class="col-12">
       <table class="table table-sm table-striped table-bordered">
@@ -79,7 +79,7 @@
         </thead>
 
         <tbody>
-          @foreach ($defective->items2 as $item)
+          @foreach ($change->itemChangeReplacement as $item)
             <tr>
               <td>{{ $item->name }}</td>
               <td>{{ $item->quantity }}</td>
@@ -101,10 +101,10 @@
   
   <div class="row">
     <div class="col">
-      @if ($defective->items->contains('with_serial_number', 1))
+      @if ($change->itemChange->contains('with_serial_number', 1))
         <div>
           <small><u><b>Returned item/s with serial number:</b></u></small><br>
-          @foreach ($defective->items as $item)
+          @foreach ($change->itemChange as $item)
             @if ($item->serial_number)
               <small><b>{{ $item->name }}</b></small><br>
               <small style="text-transform:uppercase">{{ $item->serial_number }}</small>
@@ -115,10 +115,10 @@
         <br>
       @endif
 
-      @if ($defective->items2->contains('with_serial_number', 1))
+      @if ($change->itemChangeReplacement->contains('with_serial_number', 1))
         <div>
-          <small><u><b>Replaced item/s with serial number:</b></u></small><br>
-          @foreach ($defective->items2 as $item)
+          <small><u><b>Changed item/s with serial number:</b></u></small><br>
+          @foreach ($change->itemChangeReplacement as $item)
             @if ($item->serial_number)
               <small><b>{{ $item->name }}</b></small><br>
               <small style="text-transform:uppercase">{{ $item->serial_number }}</small>
@@ -127,7 +127,6 @@
           @endforeach
         </div>
       @endif
-    </div>
   </div>
 </div>
 
@@ -138,7 +137,7 @@
   });
 
   function closePrintView() {
-    window.location.href = "{{ route('defective.index') }}";
+    window.location.href = "{{ route('change.index') }}";
   }
 </script>
 </body>
