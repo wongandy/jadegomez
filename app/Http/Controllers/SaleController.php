@@ -330,6 +330,9 @@ class SaleController extends Controller
                         else if ($type == 'defectives' && auth()->user()->can('create defective item')) {
                             $actions .= "<a href='" . route('defective.create', $sales->id) . "'class='btn btn-info' style='margin-bottom: 4px;'><i class='fas fa-fw fa-arrow-down'></i> Defective Items</a>";
                         }
+                        else if ($type == 'changes' && auth()->user()->can('create change item')) {
+                            $actions .= "<a href='" . route('change.create', $sales->id) . "'class='btn btn-info' style='margin-bottom: 4px;'><i class='fas fa-fw fa-arrow-down'></i> Change Items</a>";
+                        }
 
                         return $actions;
                     })

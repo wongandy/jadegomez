@@ -56,7 +56,6 @@ class DefectiveController extends Controller
     public function store(Request $request)
     {
         $this->authorize('create defective item');
-
         $itemPurchaseIds = collect($request->items)->pluck('item_purchase_id')->flatten();
         $branch_id = $request->user()->branch_id;
         ItemPurchase::whereIn('id', $itemPurchaseIds)->update([

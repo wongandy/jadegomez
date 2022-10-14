@@ -70,4 +70,9 @@ class User extends Authenticatable
         return $this->belongsToMany(Role::class);
         // return $this->belongsToMany(Role::class)->select('role_id', 'user_id', 'role_user.name')->using(RoleUser::class);
     }
+
+    public function purchases()
+    {
+        return $this->hasMany(Purchase::class);
+    }
 }

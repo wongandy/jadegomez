@@ -54,7 +54,6 @@ class BranchController extends Controller
         $this->validate($request, [
             'name' => 'required',
             'address' => 'required',
-            'contact_number' => 'required'
         ]);
         
         $branch->update($request->only('name', 'address', 'contact_number'));

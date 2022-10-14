@@ -188,6 +188,7 @@ input[type=number]::-webkit-outer-spin-button {
                             </div>
                         </div>
                         <br>
+                        <br>
                     </div>
                 </div>
 

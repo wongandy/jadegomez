@@ -38,7 +38,7 @@ class PurchaseController extends Controller
         $purchase = [];
         $f = 0;
         $details = '';
-        
+
         foreach ($request->items as $item) {
             $details .= $item['quantity'] . ' x ' . $item['name'] . ' at ' . number_format($item['cost_price'], 2, '.', ',')  . '<br>';
 
