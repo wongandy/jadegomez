@@ -18,6 +18,7 @@ use App\Http\Controllers\DefectiveController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\ChangeController;
 use App\Http\Controllers\ItemPurchaseController;
+use App\Http\Controllers\LiquidationFormController;
 
 Auth::routes();
 
@@ -94,4 +95,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('change/{change}/print', [ChangeController::class, 'print'])->name('change.print');
     Route::get('change/getAllChanges', [ChangeController::class, 'getAllChanges'])->name('change.getAllChanges');
     Route::get('getItemsWithOutSerialNumberForReplacement/{item_id}/{qty}', [ChangeController::class, 'getItemsWithOutSerialNumberForReplacement']);
+
+    Route::get('liquidation', [LiquidationFormController::class, 'index'])->name('liquidation.index');
+    Route::get('liquidation/create', [LiquidationFormController::class, 'create'])->name('liquidation.create');
+    Route::post('liquidation/store', [LiquidationFormController::class, 'store'])->name('liquidation.store');
+    Route::get('liquidation/getAllRecords', [LiquidationFormController::class, 'getAllRecords'])->name('liquidation.getAllRecords');
 });
