@@ -384,6 +384,22 @@ return [
             'can' => ['create transfers', 'view transfers']
         ],
         [
+            'text'        => 'Liquidation Forms',
+            'icon'        => 'nav-icon fas fa-fw fa-file-alt',
+            'submenu' => [
+                [
+                    'text' => 'Create Liquidation Form',
+                    'route'  => 'liquidation.create',
+                    'can' => 'create liquidation forms',
+                ],
+                [
+                    'text' => 'Show Liquidation Forms',
+                    'route'  => 'liquidation.index',
+                ]
+            ],
+            'can' => ['create liquidation forms']
+        ],
+        [
             'text'        => 'CDR',
             'icon'        => 'nav-icon fas fa-fw fa-paste',
             'submenu' => [
