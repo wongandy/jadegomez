@@ -91,7 +91,7 @@ class ProductionCashDenominationSeeder extends Seeder
         ];
         
         foreach ($items as $item) {
-            CashDenomination::updateOrCreate(['id' => $item['id']], $items);
+            CashDenomination::updateOrCreate(['id' => $item['id']], $item);
         }
     }
 }

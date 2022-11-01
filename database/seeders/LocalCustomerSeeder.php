@@ -11,14 +11,17 @@ class LocalCustomerSeeder extends Seeder
     {
         $items = [
             [
+                'id' => 1,
                 'name' => 'John Doe',
                 'contact_number' => 1342255
             ],
             [
+                'id' => 2,
                 'name' => 'Dave Lee',
                 'contact_number' => 2553422
             ],
             [
+                'id' => 3,
                 'name' => 'Walk In'
             ]
         ];

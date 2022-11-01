@@ -1,8 +1,6 @@
 <?php
 
-use Database\Seeders\CashDenominationSeeder;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
@@ -21,10 +19,6 @@ class CreateCashDenominationsTable extends Migration
             $table->string('number');
             $table->timestamps();
         });
-
-        Artisan::call('db:seed', [
-            '--class' => CashDenominationSeeder::class
-        ]);
     }
 
     /**

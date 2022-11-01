@@ -6,7 +6,7 @@ use App\Models\Role;
 use App\Models\Permission;
 use Illuminate\Database\Seeder;
 
-class PermissionSeederLocal extends Seeder
+class LocalPermissionSeeder extends Seeder
 {
     public function run()
     {
