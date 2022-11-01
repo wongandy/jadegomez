@@ -6,26 +6,24 @@ use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
-    /**
-     * Seed the application's database.
-     *
-     * @return void
-     */
     public function run()
     {
-        // for development
-        $this->call(RoleSeeder::class);
-        $this->call(PermissionSeeder::class);
-        $this->call(BranchSeeder::class);
-        $this->call(UserSeeder::class);
-        $this->call(ItemSeeder::class);
-        $this->call(SupplierSeeder::class);
-        $this->call(CustomerSeeder::class);
-
-        // for production
-        // $this->call(RoleSeederProduction::class);
-        // $this->call(PermissionSeederProduction::class);
-        // $this->call(BranchSeederProduction::class);
-        // $this->call(UserSeederProduction::class);
+        if (app()->environment(['local', 'staging'])) {
+            $this->call(LocalRoleSeeder::class);
+            $this->call(LocalPermissionSeeder::class);
+            $this->call(LocalBranchSeeder::class);
+            $this->call(LocalUserSeeder::class);
+            $this->call(LocalItemSeeder::class);
+            $this->call(LocalSupplierSeeder::class);
+            $this->call(LocalCustomerSeeder::class);
+            $this->call(LocalCashDenominationSeeder::class);
+        }
+        else if (app()->environment('production')) {
+            $this->call(ProductionRoleSeeder::class);
+            $this->call(ProductionPermissionSeeder::class);
+            $this->call(ProductionBranchSeeder::class);
+            $this->call(ProductionUserSeeder::class);
+            $this->call(ProductionCashDenominationSeeder::class);
+        }
     }
 }

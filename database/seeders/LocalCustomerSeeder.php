@@ -5,16 +5,11 @@ namespace Database\Seeders;
 use App\Models\Customer;
 use Illuminate\Database\Seeder;
 
-class CustomerSeeder extends Seeder
+class LocalCustomerSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     *
-     * @return void
-     */
     public function run()
     {
-        $customers = [
+        $items = [
             [
                 'name' => 'John Doe',
                 'contact_number' => 1342255
@@ -28,8 +23,8 @@ class CustomerSeeder extends Seeder
             ]
         ];
 
-        foreach ($customers as $customer) {
-            Customer::create($customer);
+        foreach ($items as $item) {
+            Customer::updateOrCreate(['id' => $item['id']], $item);
         }
     }
 }

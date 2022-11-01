@@ -5,25 +5,21 @@ namespace Database\Seeders;
 use App\Models\Branch;
 use Illuminate\Database\Seeder;
 
-class BranchSeederProduction extends Seeder
+class ProductionBranchSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     *
-     * @return void
-     */
     public function run()
     {
-        $datas = [
+        $items = [
             [
+                'id' => 1,
                 'name' => 'Jade Gomez Computer Trading',
                 'address' => 'Basak Pardo',
-                'contact_number' => '2632489'
+                'contact_number' => '(032) 263-2489'
             ]
         ];
 
-        foreach ($datas as $data) {
-            Branch::create($data);
+        foreach ($items as $item) {
+            Branch::updateOrCreate(['id' => $item['id']], $item);
         }
     }
 }
