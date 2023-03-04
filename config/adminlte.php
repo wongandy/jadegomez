@@ -383,40 +383,40 @@ return [
             ],
             'can' => ['create transfers', 'view transfers']
         ],
-        [
-            'text'        => 'Liquidation Forms',
-            'icon'        => 'nav-icon fas fa-fw fa-file-alt',
-            'submenu' => [
-                [
-                    'text' => 'Create Liquidation Form',
-                    'route'  => 'liquidation.create',
-                    'can' => 'create liquidation forms',
-                ],
-                [
-                    'text' => 'Show Liquidation Forms',
-                    'route'  => 'liquidation.index',
-                ]
-            ],
-            'can' => ['create liquidation forms']
-        ],
-        [
-            'text'        => 'CDR',
-            'icon'        => 'nav-icon fas fa-fw fa-paste',
-            'submenu' => [
-                [
-                    'text'        => 'Item Return',
-                    'route'       => 'return.index'
-                ],
-                [
-                    'text'        => 'Item Defective',
-                    'route'       => 'defective.index'
-                ],
-                [
-                    'text'        => 'Item Change',
-                    'route'       => 'change.index'
-                ],
-            ],
-        ],
+        // [
+        //     'text'        => 'Liquidation Forms',
+        //     'icon'        => 'nav-icon fas fa-fw fa-file-alt',
+        //     'submenu' => [
+        //         [
+        //             'text' => 'Create Liquidation Form',
+        //             'route'  => 'liquidation.create',
+        //             'can' => 'create liquidation forms',
+        //         ],
+        //         [
+        //             'text' => 'Show Liquidation Forms',
+        //             'route'  => 'liquidation.index',
+        //         ]
+        //     ],
+        //     'can' => ['create liquidation forms']
+        // ],
+        // [
+        //     'text'        => 'CDR',
+        //     'icon'        => 'nav-icon fas fa-fw fa-paste',
+        //     'submenu' => [
+        //         [
+        //             'text'        => 'Item Return',
+        //             'route'       => 'return.index'
+        //         ],
+        //         [
+        //             'text'        => 'Item Defective',
+        //             'route'       => 'defective.index'
+        //         ],
+        //         [
+        //             'text'        => 'Item Change',
+        //             'route'       => 'change.index'
+        //         ],
+        //     ],
+        // ],
         [
             'text'        => 'Generate Reports',
             'icon'        => 'nav-icon fas fa-fw fa-file-alt',
