@@ -14,7 +14,9 @@
             </div>
         @endif
 
-        <a href="{{ route('branch.create') }}" class="btn btn-primary">Create Branch</a><br><br>
+        @can('create branches')
+            <a href="{{ route('branch.create') }}" class="btn btn-primary">Create Branch</a><br><br>
+        @endcan
        
         <div class="card">
             <div class="card-header">

@@ -35,77 +35,79 @@ class PurchaseController extends Controller
     {
         $this->authorize('create purchases');
 
-        $purchase = [];
-        $f = 0;
-        $details = '';
-        
-        foreach ($request->items as $item) {
-            $details .= $item['quantity'] . ' x ' . $item['name'] . ' at ' . number_format($item['cost_price'], 2, '.', ',')  . '<br>';
+        DB::transaction(function () use ($request) {
+            $purchase = [];
+            $f = 0;
+            $details = '';
 
-            if ($item['with_serial_number']) {
-                $details .= '(' . implode(', ', $item['serial_number']) . ')<br><br>';
-            }
-            else {
-                $details .= '<br>';
-            }
+            foreach ($request->items as $item) {
+                $details .= $item['quantity'] . ' x ' . $item['name'] . ' at ' . number_format($item['cost_price'], 2, '.', ',')  . '<br>';
 
-            for ($i = 0; $i < $item['quantity']; $i++) {
-                $purchase[$f]['item_id'] = $item['item_id'];
-                $purchase[$f]['branch_id'] = $request->user()->branch_id;
-                $purchase[$f]['cost_price'] = $item['cost_price'];
-                $purchase[$f]['created_at'] = date('Y-m-d H:i:s');
-                $purchase[$f]['updated_at'] = date('Y-m-d H:i:s');
-                
                 if ($item['with_serial_number']) {
-                    $purchase[$f]['serial_number'] = $item['serial_number'][$i];
+                    $details .= '(' . implode(', ', $item['serial_number']) . ')<br><br>';
                 }
                 else {
-                    $purchase[$f]['serial_number'] = NULL;
+                    $details .= '<br>';
                 }
 
-                $f++;
+                for ($i = 0; $i < $item['quantity']; $i++) {
+                    $purchase[$f]['item_id'] = $item['item_id'];
+                    $purchase[$f]['branch_id'] = $request->user()->branch_id;
+                    $purchase[$f]['cost_price'] = $item['cost_price'];
+                    $purchase[$f]['created_at'] = date('Y-m-d H:i:s');
+                    $purchase[$f]['updated_at'] = date('Y-m-d H:i:s');
+                    
+                    if ($item['with_serial_number']) {
+                        $purchase[$f]['serial_number'] = $item['serial_number'][$i];
+                    }
+                    else {
+                        $purchase[$f]['serial_number'] = NULL;
+                    }
+
+                    $f++;
+                }
+
+                // save to db the total quantity of each items for each branch
+                $branchItem = BranchItem::where(['branch_id' => auth()->user()->branch_id, 'item_id' => $item['item_id']])->first();
+
+                if ($branchItem !== null) {
+                    $branchItem->increment('quantity', $item['quantity']);
+                }
+                else {
+                    $branchItem = BranchItem::create([
+                        'branch_id' => auth()->user()->branch_id,
+                        'item_id' => $item['item_id'],
+                        'quantity' => $item['quantity']
+                    ]);
+                }
             }
 
-            // save to db the total quantity of each items for each branch
-            $branchItem = BranchItem::where(['branch_id' => auth()->user()->branch_id, 'item_id' => $item['item_id']])->first();
+            $number = Purchase::where('branch_id', auth()->user()->branch_id)->max('number') + 1;
 
-            if ($branchItem !== null) {
-                $branchItem->increment('quantity', $item['quantity']);
+            $createdPurchase = Purchase::create([
+                'supplier_id' => $request->supplier_id,
+                'branch_id' => $request->user()->branch_id,
+                'number' => $number,
+                'user_id' => $request->user()->id,
+                'purchase_number' => $request->purchase_number,
+                'details' => $details
+            ]);
+
+            // chunk purchases into multiple arrays so as not to reach prepared statement error limit
+            $batch_purchases = array_chunk($purchase, 1000);
+
+            foreach ($batch_purchases as $batch_purchase) {
+                $createdPurchase->items()->attach($batch_purchase);
             }
-            else {
-                $branchItem = BranchItem::create([
-                    'branch_id' => auth()->user()->branch_id,
-                    'item_id' => $item['item_id'],
-                    'quantity' => $item['quantity']
-                ]);
+
+            // update the cost price of each items as it is dynamic
+            foreach ($request->items as $items) {
+                $dynamic_cost_price = DB::select("SELECT ROUND(SUM(total_cost_price) / SUM(qty), 2) AS dynamic_cost_price FROM (SELECT COUNT(item_id) as qty, (COUNT(item_id) * cost_price) AS total_cost_price FROM `item_purchase` where status = 'available' AND item_id = " . $items['item_id'] . " GROUP BY purchase_id) as T");
+                $item = Item::find($items['item_id']);
+                $item->dynamic_cost_price = $dynamic_cost_price[0]->dynamic_cost_price;
+                $item->save();
             }
-        }
-
-        $number = Purchase::where('branch_id', auth()->user()->branch_id)->max('number') + 1;
-
-        $createdPurchase = Purchase::create([
-            'supplier_id' => $request->supplier_id,
-            'branch_id' => $request->user()->branch_id,
-            'number' => $number,
-            'user_id' => $request->user()->id,
-            'purchase_number' => $request->purchase_number,
-            'details' => $details
-        ]);
-
-        // chunk purchases into multiple arrays so as not to reach prepared statement error limit
-        $batch_purchases = array_chunk($purchase, 1000);
-
-        foreach ($batch_purchases as $batch_purchase) {
-            $createdPurchase->items()->attach($batch_purchase);
-        }
-
-        // update the cost price of each items as it is dynamic
-        foreach ($request->items as $items) {
-            $dynamic_cost_price = DB::select("SELECT ROUND(SUM(total_cost_price) / SUM(qty), 2) AS dynamic_cost_price FROM (SELECT COUNT(item_id) as qty, (COUNT(item_id) * cost_price) AS total_cost_price FROM `item_purchase` where status = 'available' AND item_id = " . $items['item_id'] . " GROUP BY purchase_id) as T");
-            $item = Item::find($items['item_id']);
-            $item->dynamic_cost_price = $dynamic_cost_price[0]->dynamic_cost_price;
-            $item->save();
-        }
+        });
 
         $request->session()->flash('message', 'Create purchase successful!');
     }

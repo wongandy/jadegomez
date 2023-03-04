@@ -9,16 +9,16 @@ use App\Models\Customer;
 use App\Models\BranchItem;
 use App\Models\ItemPurchase;
 use Illuminate\Http\Request;
+use Yajra\Datatables\Datatables;
 use Illuminate\Support\Facades\DB;
 use App\Http\Requests\SaleFormRequest;
-use Yajra\Datatables\Datatables;
 
 class SaleController extends Controller
 {
     public function index()
     {
         $this->authorize('view sales');
-        $today_sales = Sale::with('items', 'customer', 'user')
+        $today_sales = Sale::with('items', 'customer', 'user', 'approvedByUser')
             ->where('branch_id', auth()->user()->branch_id)
             ->where(function($query) {
                 $query->where('updated_at', '>=', date('Y-m-d') . ' 00:00:00')
@@ -195,7 +195,11 @@ class SaleController extends Controller
         // }
 
         $sale = Sale::where('id', $sale->id)->first();
-        $sale->update(['status' => 'void']);
+        $sale->update([
+            'status' => 'void',
+            'net_total' => 0,
+        ]);
+
         $itemPurchaseIds = $sale->itemPurchaseId()->pluck('item_purchase_id');
 
         ItemPurchase::whereIn('id', $itemPurchaseIds)->update([
@@ -261,7 +265,7 @@ class SaleController extends Controller
                     
                     if (auth()->user()->can('delete sales')) {
                         if ($sales->status != 'void') {
-                            $actions .= "<form action='" . route('sale.void', $sales->id) . "' class='void_sale_form' method='POST' style='display: inline-block; margin-bottom: 2px;'>
+                            $actions .= "<form action='" . route('sale.void', $sales->id) . "' class='void_sale_form' method='POST' style='display: inline-block; margin-bottom: 4px;'>
                                             <input type='hidden' name='_token' value='" . csrf_token() . "'>
                                             <input type='hidden' name='_method' value='PUT'>
                                             <button type='submit' class='btn btn-danger'><i class='fas fa-fw fa-times'></i> Void</button>
@@ -271,20 +275,69 @@ class SaleController extends Controller
 
                     if (auth()->user()->can('approve sales')) {
                         if ($sales->status == 'for approval' || $sales->status == 'unpaid') {
-                            $actions .= "<a href='" . route('sale.review', $sales->id) . "' class='btn btn-info' style='margin-bottom: 2px;'><i class='fas fa-fw fa-binoculars'></i> Review</a>";
+                            $actions .= "<a href='" . route('sale.review', $sales->id) . "' class='btn btn-info' style='margin-bottom: 4px;'><i class='fas fa-fw fa-binoculars'></i> Review</a>";
                         }
                     }
                     
                     if (auth()->user()->can('print unlimited sale DR')) {
                         if ($sales->status == 'paid' || $sales->status == 'unpaid') {
-                            $actions .= "<a href='" . route('sale.print', $sales->id) . "' class='btn btn-info' style='margin-bottom: 2px;'><i class='fas fa-fw fa-print'></i> Print DR</a>";
+                            $actions .= "<a href='" . route('sale.print', $sales->id) . "' class='btn btn-info' style='margin-bottom: 4px;'><i class='fas fa-fw fa-print'></i> Print DR</a>";
                         }
                     }
-                       
+                    
                     return $actions;
                 })
                 ->rawColumns(['details', 'status', 'action'])
                 ->make(true);
+        }
+    }
+
+    public function getAllBranchesSales($type = 'default', Request $request) {
+        if ($request->ajax()) {
+            $sales = Sale::with('items', 'customer', 'user', 'branch', 'approvedByUser')
+            ->select('sales.*')
+            ->where('status', '=', 'paid');
+
+            return Datatables::of($sales)
+                ->addIndexColumn()
+                ->editColumn('details', function($sales) {
+                        return $sales->details;
+                    })
+                    ->editColumn('approvedByUser', function($sales) {
+                        if ($sales->approvedByUser) {
+                            return $sales->approvedByUser->name;
+                        }
+
+                        return '';
+                    })
+                    ->editColumn('status', function($sales) {
+                        if ($sales->status == 'void') {
+                            return "<span class='badge badge-danger'>$sales->status</span>";
+                        }
+                        elseif ($sales->status == 'for approval' || $sales->status == 'unpaid') {
+                            return "<span class='badge badge-warning'>$sales->status</span>";
+                        }
+                        else {
+                            return "<span class='badge badge-success'>$sales->status</span>";
+                        }
+                    })
+                    ->addColumn('action', function($sales) use ($type) {
+                        $actions = '';
+
+                        if ($type == 'refunds' && auth()->user()->can('create return item')) {
+                            $actions .= "<a href='" . route('return.create', $sales->id) . "'class='btn btn-info' style='margin-bottom: 4px;'><i class='fas fa-fw fa-arrow-down'></i> Return Items</a>";
+                        }
+                        else if ($type == 'defectives' && auth()->user()->can('create defective item')) {
+                            $actions .= "<a href='" . route('defective.create', $sales->id) . "'class='btn btn-info' style='margin-bottom: 4px;'><i class='fas fa-fw fa-arrow-down'></i> Defective Items</a>";
+                        }
+                        else if ($type == 'changes' && auth()->user()->can('create change item')) {
+                            $actions .= "<a href='" . route('change.create', $sales->id) . "'class='btn btn-info' style='margin-bottom: 4px;'><i class='fas fa-fw fa-arrow-down'></i> Change Items</a>";
+                        }
+
+                        return $actions;
+                    })
+                    ->rawColumns(['details', 'status', 'action'])
+                    ->make(true);
         }
     }
 }

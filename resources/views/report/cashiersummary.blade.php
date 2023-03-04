@@ -11,19 +11,6 @@
 </head>
 <body>
 <div class="wrapper">
-  {{-- <div class="row">
-    <div class="col">
-      <b>Date:</b> {{ $sale->updated_at }}<br>
-      <b>Customer:</b> {{ $sale->customer->name }}<br>
-      <b>Contact Number:</b> {{ $sale->customer->contact_number }}
-    </div>
-    <div class="col text-right">
-        <b>Delivery Receipt No:</b> {{ $sale->sale_number }}<br>
-        <b>Cashier:</b> {{ $sale->user->name }}<br>
-    </div>
-  </div>
-  <br> --}}
-  
   <div class="row">
     <div class="col text-center">
       <h4>Cashier Summary Report</h4>
@@ -39,17 +26,9 @@
     @if ($cashiers->count())
       <div class="row">
         <div class="col-12">
-            @php
-              $grand_total = 0;
-            @endphp
-
             <h4 class="text-center">{{ $date }}</h4>
 
             @foreach ($cashiers as $name => $sales)
-              @php
-                $net_total = 0;
-              @endphp
-              
               <h6>Cashier: {{ $name }}</h6>
               <br>
 
@@ -57,7 +36,9 @@
                 <thead>
                   <tr>
                     <th>Receipt Number</th>
-                    <th>Sale Created</th>
+                    <th>Created By</th>
+                    <th>Created At</th>
+                    <th>Type</th>
                     <th>Status</th>
                     <th>Customer</th>
                     <th class="text-right">Total</th>
@@ -65,15 +46,12 @@
                 </thead>
 
                 <tbody>
-                  
-
                   @foreach ($sales as $sale)
-                    @php
-                      $net_total += $sale->net_total;
-                    @endphp
                     <tr>
                       <td>{{ $sale->sale_number }}</td>
+                      <td>{{ $sale->user->name }}</td>
                       <td>{{ date('Y-m-d h:i A', strtotime($sale->created_at)) }}</td>
+                      <td>{{ $sale->type }}</td>
                       <td>{{ $sale->status }}</td>
                       <td>{{ $sale->customer_name }}</td>
                       <td class="text-right">@money($sale->net_total)</td>
@@ -83,17 +61,16 @@
                       <td></td>
                       <td></td>
                       <td></td>
+                      <td></td>
+                      <td></td>
                       <th>Total</th>
-                      <th class="text-right">@money($net_total)</th>
+                      <th class="text-right">@money($sales->sum('net_total'))</th>
                     </tr>
                 </tbody>
               </table>
               <br>
-              @php
-                $grand_total += $net_total;
-              @endphp
             @endforeach
-            <h5 class="text-center">Grand Total - @money($grand_total)</h5>
+            <h5 class="text-center">Grand Total - @money($cashiers->flatten()->sum('net_total'))</h5>
             <br>
 
             <hr>

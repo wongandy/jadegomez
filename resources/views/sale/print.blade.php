@@ -100,45 +100,7 @@
         </div>
       @endif
     </div>
-  {{-- <div class="row">
-    <div class="col-8">
-      <p>
-        <small>This document is not valid for claiming input tax. For WARRANTY purposes only.</small><br>
-        <small>Printed on <?php echo date('Y-m-d h:i:sa'); ?></small>
-      </p>
-      
-      @if ($sale->items->contains('with_serial_number', 1))
-        <div>
-          @foreach ($sale->items as $item)
-            @if ($item->serial_number)
-              <small><b>{{ $item->name }}</b></small><br>
-              <small style="text-transform:uppercase">{{ $item->serial_number }}</small>
-              <br>
-            @endif
-          @endforeach
-        </div>
-      @endif
-    </div>
-
-    <div class="col-4">
-        <table class="table table-sm">
-          <tr>
-            <th>Gross Total</th>
-            <td>{{ $sale->gross_total }}</td>
-          </tr>
-
-          <tr>
-            <th>Discount</th>
-            <td>{{ $sale->discount }}</td>
-          </tr>
-
-          <tr>
-            <th>Net Total:</th>
-            <td>{{ $sale->net_total }}</td>
-          </tr>
-        </table>
-    </div>
-  </div> --}}
+  </div>
 </div>
 
 <script type="text/javascript">
