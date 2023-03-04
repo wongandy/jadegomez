@@ -50,70 +50,61 @@ class TransferController extends Controller
     {
         $this->authorize('create transfers');
         
-        // save to db the total quantity of each items for each branch
-        foreach ($request->items as $item) {
-            $branchItemFrom = BranchItem::where(['branch_id' => auth()->user()->branch_id, 'item_id' => $item['item_id']])->first()->decrement('quantity', $item['quantity']);
-            // $branchItemTo = BranchItem::where(['branch_id' => $request->to_branch_id, 'item_id' => $item['item_id']])->first();
-
-            // if ($branchItemTo !== null) {
-            //     $branchItemTo->increment('quantity', $item['quantity']);
-            // }
-            // else {
-            //     $branchItemTo = BranchItem::create([
-            //         'branch_id' => $request->to_branch_id,
-            //         'item_id' => $item['item_id'],
-            //         'quantity' => $item['quantity']
-            //     ]);
-            // }
-        }
-
-        $transfers = [];
-        $f = 0;
-        $details = '';
-
-        foreach ($request->items as $item) {
-            $details .= $item['quantity'] . ' x ' . $item['name'] . '<br>';
-
-            if ($item['with_serial_number']) {
-                $itemPurchases = ItemPurchase::where('item_id', $item['item_id'])->where('branch_id', $request->user()->branch_id)->whereIn('serial_number', $item['serial_number'])->where('status', 'available')->get();
-                $details .= '(' . $itemPurchases->implode('serial_number', ', ') . ')' . '<br><br>';
-            }
-            else {
-                $itemPurchases = ItemPurchase::where('item_id', $item['item_id'])->where('branch_id', $request->user()->branch_id)->where('status', 'available')->limit($item['quantity'])->get();
-                $details .= '<br>';
-            }
-            
-            foreach ($itemPurchases as $itemPurchase) {
-                $itemPurchase->update([
-                    'branch_id' => $request->to_branch_id,
-                    'status' => 'in transit'
-                ]);
+        DB::transaction(function () use ($request) {
+            // save to db the total quantity of each items for each branch
+            foreach ($request->items as $item) {
+                $branchItemFrom = BranchItem::where(['branch_id' => auth()->user()->branch_id, 'item_id' => $item['item_id']])->first()->decrement('quantity', $item['quantity']);
             }
 
-            for ($i = 0; $i < $item['quantity']; $i++) {
-                $transfers[$f]['item_id'] = $item['item_id'];
-                $transfers[$f]['item_purchase_id'] = $itemPurchases[$i]->id;
-                $transfers[$f]['created_at'] = date('Y-m-d H:i:s');
-                $transfers[$f]['updated_at'] = date('Y-m-d H:i:s');
-                $f++;
-            }    
-        }
+            $transfers = [];
+            $f = 0;
+            $details = '';
 
-        $number = Transfer::where('sending_branch_id', auth()->user()->branch_id)->max('number') + 1;
-        $transfer_number = "TR-" . str_pad($number, 8, "0", STR_PAD_LEFT);
+            foreach ($request->items as $item) {
+                $details .= $item['quantity'] . ' x ' . $item['name'] . '<br>';
 
-        $transfer = Transfer::create([
-            'sending_branch_id' => $request->user()->branch_id,
-            'user_id' => $request->user()->id,
-            'receiving_branch_id' => $request->to_branch_id,
-            'number' => $number,
-            'transfer_number' => $transfer_number,
-            'details' => $details,
-            'notes' => $request->notes
-        ]);
+                if ($item['with_serial_number']) {
+                    $itemPurchases = ItemPurchase::where('item_id', $item['item_id'])->where('branch_id', $request->user()->branch_id)->whereIn('serial_number', $item['serial_number'])->where('status', 'available')->get();
+                    $details .= '(' . $itemPurchases->implode('serial_number', ', ') . ')' . '<br><br>';
+                }
+                else {
+                    $itemPurchases = ItemPurchase::where('item_id', $item['item_id'])->where('branch_id', $request->user()->branch_id)->where('status', 'available')->limit($item['quantity'])->get();
+                    $details .= '<br>';
+                }
+                
+                foreach ($itemPurchases as $itemPurchase) {
+                    $itemPurchase->update([
+                        'branch_id' => $request->to_branch_id,
+                        'status' => 'in transit'
+                    ]);
+                }
 
-        $transfer->items()->attach($transfers);
-        return redirect()->route('transfer.print', $transfer->id);
+                for ($i = 0; $i < $item['quantity']; $i++) {
+                    $transfers[$f]['item_id'] = $item['item_id'];
+                    $transfers[$f]['item_purchase_id'] = $itemPurchases[$i]->id;
+                    $transfers[$f]['created_at'] = date('Y-m-d H:i:s');
+                    $transfers[$f]['updated_at'] = date('Y-m-d H:i:s');
+                    $f++;
+                }    
+            }
+
+            $number = Transfer::where('sending_branch_id', auth()->user()->branch_id)->max('number') + 1;
+            $transfer_number = "TR-" . str_pad($number, 8, "0", STR_PAD_LEFT);
+
+            $transfer = Transfer::create([
+                'sending_branch_id' => $request->user()->branch_id,
+                'user_id' => $request->user()->id,
+                'receiving_branch_id' => $request->to_branch_id,
+                'number' => $number,
+                'transfer_number' => $transfer_number,
+                'details' => $details,
+                'notes' => $request->notes
+            ]);
+
+            $transfer->items()->attach($transfers);
+
+            return redirect()->route('transfer.print', $transfer->id);
+        });
     }
 
     public function supplier()
