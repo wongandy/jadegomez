@@ -35,10 +35,15 @@
               <table class="table table-sm table-striped">
                 <thead>
                   <tr>
-                    <th>Receipt Number</th>
+                    <!-- <th>Receipt Number</th>
                     <th>Created By</th>
                     <th>Created At</th>
                     <th>Type</th>
+                    <th>Status</th>
+                    <th>Customer</th>
+                    <th class="text-right">Total</th> -->
+                    <th>Receipt Number</th>
+                    <th>Sale Created</th>
                     <th>Status</th>
                     <th>Customer</th>
                     <th class="text-right">Total</th>
@@ -48,18 +53,23 @@
                 <tbody>
                   @foreach ($sales as $sale)
                     <tr>
-                      <td>{{ $sale->sale_number }}</td>
+                      {{--<!-- <td>{{ $sale->sale_number }}</td>
                       <td>{{ $sale->user->name }}</td>
                       <td>{{ date('Y-m-d h:i A', strtotime($sale->created_at)) }}</td>
                       <td>{{ $sale->type }}</td>
+                      <td>{{ $sale->status }}</td>
+                      <td>{{ $sale->customer_name }}</td>
+                      <td class="text-right">@money($sale->net_total)</td> -->--}}
+                      <td>{{ $sale->sale_number }}</td>
+                      <td>{{ date('Y-m-d h:i A', strtotime($sale->created_at)) }}</td>
                       <td>{{ $sale->status }}</td>
                       <td>{{ $sale->customer_name }}</td>
                       <td class="text-right">@money($sale->net_total)</td>
                     </tr>
                   @endforeach
                     <tr>
-                      <td></td>
-                      <td></td>
+                      <!-- <td></td>
+                      <td></td> -->
                       <td></td>
                       <td></td>
                       <td></td>
