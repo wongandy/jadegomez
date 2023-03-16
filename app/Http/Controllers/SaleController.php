@@ -197,7 +197,6 @@ class SaleController extends Controller
         $sale = Sale::where('id', $sale->id)->first();
         $sale->update([
             'status' => 'void',
-            'net_total' => 0,
         ]);
 
         $itemPurchaseIds = $sale->itemPurchaseId()->pluck('item_purchase_id');
