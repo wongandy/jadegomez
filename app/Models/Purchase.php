@@ -4,16 +4,18 @@ namespace App\Models;
 
 use App\Models\User;
 use App\Models\Branch;
+use DateTimeInterface;
 use App\Models\Supplier;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\Traits\LogsActivity;
+use Staudenmeir\EloquentEagerLimit\HasEagerLimit;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use DateTimeInterface;
 
 class Purchase extends Model
 {
     use HasFactory, LogsActivity;
+    use HasEagerLimit;
 
     protected $fillable = ['branch_id', 'supplier_id', 'user_id', 'number', 'details', 'purchase_number', 'status'];
     protected static $logName = 'Purchase';

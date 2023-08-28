@@ -25,7 +25,12 @@ class PurchaseController extends Controller
         $number = Purchase::where('branch_id', auth()->user()->branch_id)->max('number') + 1;
         $purchase_number = "PO-" . str_pad($number, 8, "0", STR_PAD_LEFT);
         $items = Item::with(['purchases' => function ($query) use ($supplier) {
-            return $query->select('purchases.id', 'supplier_id')->where('supplier_id', $supplier->id)->where('purchases.status', '!=', 'void')->where('purchases.branch_id', auth()->user()->branch_id);
+            return $query->select('purchases.id', 'supplier_id')
+                         ->where('supplier_id', $supplier->id)
+                         ->where('purchases.status', '!=', 'void')
+                         ->where('purchases.branch_id', auth()->user()->branch_id)
+                         ->latest('purchases.created_at')
+                         ->limit(1);
         }])->get();
         
         return view('purchase.create', compact('items', 'supplier', 'purchase_number'));
