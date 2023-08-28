@@ -5,11 +5,13 @@ namespace App\Models;
 use App\Models\Transfer;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\Traits\LogsActivity;
+use Staudenmeir\EloquentEagerLimit\HasEagerLimit;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Item extends Model
 {
     use HasFactory, LogsActivity;
+    use HasEagerLimit;
 
     protected $fillable = ['name', 'details', 'upc', 'selling_price', 'with_serial_number'];
     protected static $logName = 'Item';
